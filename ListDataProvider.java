@@ -46,7 +46,7 @@ public class ListDataProvider implements ListAdapter{
 
 	@Override
 	public int getCount() {
-		return 1;
+		return 20;
 		//TODO
 	}
 
@@ -54,7 +54,8 @@ public class ListDataProvider implements ListAdapter{
 	public Object getItem(int position) {
 
 		//TODO
-		return "testing";
+		return "testing";   //todo what is this for and how diff from getView? Presumably this will want to return an InspirationItem.
+
 
 	}
 
@@ -64,7 +65,7 @@ public class ListDataProvider implements ListAdapter{
 	}
 
 	@Override
-	public boolean hasStableIds() {
+	public boolean hasStableIds() {   //TODO what is this for?
 		return false;
 	}
 
@@ -79,21 +80,23 @@ public class ListDataProvider implements ListAdapter{
 
 
 
+		//Suggest
+
 	}
 
 	@Override
 	public int getItemViewType(int position) {
-		return IGNORE_ITEM_VIEW_TYPE;
+		return IGNORE_ITEM_VIEW_TYPE;     //TODO what was this for??
 	}
 
 	@Override
-	public int getViewTypeCount() {
+	public int getViewTypeCount() {   //TODO what?
 		return 0;
 	}
 
 	@Override
-	public boolean isEmpty() {
-		return false;
+	public boolean isEmpty() {   //TODO what?
+		return false;  //todo not always...
 	}
 
 	//Will talk to DB or whatever and return a list of Views

@@ -9,8 +9,11 @@ import java.util.ArrayList;
  */
 public class Hashtags {
 
+
+	private static final String SEPARATOR_CHAR = " ";
+
 	//Linkedlist of hashtags
-	//Every hashtag should be an all one word string with no punctuation
+	//Every hashtag should be an all one word string with no punctuation to make dividing easier
 
 
 	private static String TAG = "Hashtags";
@@ -18,6 +21,33 @@ public class Hashtags {
 
 	public Hashtags() {
 		mHashtags = new ArrayList<>();
+	}
+
+	public Hashtags(String tagString) {
+		String[] tags = tagString.split(SEPARATOR_CHAR);
+		for (String t : tags) {
+			mHashtags.add(t);
+		}
+	}
+
+	@Override
+	public String toString() {
+		String tagString = "";
+		for (String t : mHashtags) {
+			tagString = tagString.concat(t);
+			tagString = tagString.concat(SEPARATOR_CHAR);
+		}
+
+		//Remove last separator_char
+
+		if (tagString.endsWith(SEPARATOR_CHAR)) {
+			int cutChar = tagString.lastIndexOf(SEPARATOR_CHAR);
+			tagString = tagString.substring(0, cutChar);   //TODO TEST
+		}
+
+		Log.i(TAG, "Hasttags string returned is " + tagString);
+
+		return tagString;
 	}
 
 	public void addHashtag(String newTag) {

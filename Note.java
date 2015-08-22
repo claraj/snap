@@ -1,11 +1,13 @@
 package com.example.hello.inspirationboard;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import java.text.ParseException;
 import java.util.Date;
 
 /**
@@ -13,17 +15,55 @@ import java.util.Date;
  */
 public class Note extends InspirationItem {
 
+	private final String TAG = "NOTE class";
 	private String mText;
-	private Date dateCreated;
-	private Date dateLastMod;
+	//private Date mDateCreated;
+	//private Date dateLastMod;
 
 	private int previewLengthChars = 100;
 
 	public Note(String text, Date created, Date lastMod) {
 		mText = text;
-		dateCreated = created;
-		dateLastMod = lastMod;
+		mDateCreated = created;
+		mDateLastModified = lastMod;
 	}
+
+
+	public Note(int id, String text, Date created, Date lastMod) {
+		this(text, created, lastMod);
+		mDatabaseID = id;
+
+	}
+
+
+
+	public Note(int id, String text, String created, String lastMod) {
+
+		mText = text;
+
+		mDatabaseID = id;
+
+		try {
+			mDateCreated = dateFormatter.parse(created);
+			mDateLastModified = dateFormatter.parse(lastMod);
+		} catch (ParseException pe) {
+			Log.e(TAG, "Parse exception turning created or last mod into Date" + created + ", " + lastMod + " setting both to NULL");
+			mDateLastModified = null;
+			mDateCreated = null;
+		}
+	}
+
+
+	public String getText() {
+		return mText;
+	}
+
+
+	@Override
+	public String toString() {
+		return mText + " created: " + mDateCreated.toString() + "  modfied  " + mDateLastModified.toString();
+	}
+
 
 	@Override
 	public View getView(Context context, ViewGroup parent) {
@@ -42,7 +82,7 @@ public class Note extends InspirationItem {
 
 		noteText.setText(previewChars);
 		TextView noteDateCreate = (TextView)noteView.findViewById(R.id.note_create_date);
-		noteDateCreate.setText(dateCreated.toString());
+		noteDateCreate.setText(mDateCreated.toString());
 
 
 		//TODO Last mod
@@ -51,4 +91,7 @@ public class Note extends InspirationItem {
 
 
 	}
+
+
+
 }

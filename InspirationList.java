@@ -76,6 +76,15 @@ public class InspirationList extends ActionBarActivity {
 		});
 
 
+		Button addPicture = (Button)findViewById(R.id.add_picture_button);
+		addPicture.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Log.i(TAG, "add picture on click");
+				InspirationList.this.addPicture();
+			}
+		});
+
 
 		//TODO Add header with search bar/searchview
 
@@ -105,6 +114,7 @@ public class InspirationList extends ActionBarActivity {
 
 	private void addNote(){
 		//TODO
+
 
 	}
 
