@@ -61,7 +61,7 @@ public class Note extends InspirationItem {
 
 	@Override
 	public String toString() {
-		return mText + " created: " + mDateCreated.toString() + "  modfied  " + mDateLastModified.toString();
+		return mText + " created: " + mDateCreated.toString() + "  modified  " + mDateLastModified.toString();
 	}
 
 
