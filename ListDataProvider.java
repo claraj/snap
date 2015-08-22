@@ -46,7 +46,13 @@ public class ListDataProvider implements ListAdapter{
 
 	@Override
 	public int getCount() {
-		return 20;
+
+		//ASK database how many things
+
+		return mDb.getInspirationItemCount();
+
+
+
 		//TODO
 	}
 
@@ -91,7 +97,7 @@ public class ListDataProvider implements ListAdapter{
 
 	@Override
 	public int getViewTypeCount() {   //TODO what?
-		return 0;
+		return 2;
 	}
 
 	@Override

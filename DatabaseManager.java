@@ -152,6 +152,31 @@ public class DatabaseManager {
 	//TODO
 	}
 
+	public int getInspirationItemCount() {
+
+		if (cacheInvalid) {
+
+			String countNotes = "SELECT Count(*) from " + NOTES_TABLE;
+			String countPictures = "SELECT Count(*) from " + PICTURE_TABLE;
+
+			Cursor noteCountCursor = db.rawQuery(countNotes, null);
+			noteCountCursor.moveToFirst();
+			int noteCount =  noteCountCursor.getInt(0);  //TODO TEST
+
+			Cursor picCountCursor = db.rawQuery(countPictures, null);
+			picCountCursor.moveToFirst();
+			int pictureCount =  picCountCursor.getInt(0);  //TODO TEST
+
+			Log.i(TAG, "Note count " + noteCount + " pic count " + pictureCount);
+
+			return (pictureCount + noteCount);
+
+
+		}
+		else {
+			return allInspirationsCache.size();
+		}
+	}
 
 
 	//Inner class
@@ -171,13 +196,13 @@ public class DatabaseManager {
 			//Example sql syntax... CREATE TABLE notes (id INT, notetext string) ;
 
 			//String formatting makes life easier
-			String createNotesSQL = String.format("CREATE TABLE %s ( %s int primary key autoincrement not null, %s string not null, %s string not null, %s string not null",
+			String createNotesSQL = String.format("CREATE TABLE %s ( %s integer primary key autoincrement not null, %s string not null, %s string not null, %s string not null)",
 					NOTES_TABLE, NOTE_ID_COL, NOTE_TEXT_COL, NOTE_DATE_CREATE_COL, NOTE_DATE_LAST_MOD_COL);
 
 			db.execSQL(createNotesSQL);
 
 
-			String createPicturesSQL = String.format("CREATE TABLE %s ( %s int primary key autoincrememt not null, %s string not null, %s string not null, %s string not null, %s string",
+			String createPicturesSQL = String.format("CREATE TABLE %s ( %s integer primary key autoincrement not null, %s string not null, %s string not null, %s string not null, %s string)",
 					PICTURE_TABLE, PICTURE_ID_COL, PICTURE_URI_COL, PICTURE_DATE_CREATE_COL, PICTURE_DATE_LAST_MOD_COL, PICTURE_HASHTAGS_COL);
 
 			db.execSQL(createPicturesSQL);

@@ -10,6 +10,8 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import java.util.Date;
+
 
 //List of notes, scrollable, in ListView, most recent first
 //Way to add new notes (Hamburger menu? This opens new Activity *Ability to modify this* may need two+ mechanisms Gesture recognition on main screen?)
@@ -43,10 +45,30 @@ public class InspirationList extends ActionBarActivity {
 		//Populate the list
 		//set up search handlers
 
+
+
 		configureDatabase();
+
+
+		addTestData();
+
+
 		configureListView();
 		populateList();
 
+
+
+	}
+
+	private void addTestData() {
+
+		Note test1 = new Note("Hello, I'm a test note", new Date(), new Date());
+		Note test2 = new Note("A resfjdfgjkfgjkldflgkjdgfkjlgdjklgdjklfgdjkdover 100 characters I think sdfkljsdfjljlksdfjklsdklfjgkl;gdfkl;gdfjkldfgjkldgfjklHello, I'm a test note", new Date(), new Date());
+		Note test3 = new Note("Another test", new Date(), new Date());
+
+		mDatabaseManager.addNote(test1);
+		mDatabaseManager.addNote(test2);
+		mDatabaseManager.addNote(test3);
 
 
 	}
@@ -61,7 +83,7 @@ public class InspirationList extends ActionBarActivity {
 		//Add footer view with add button
 
 
-		View footerView = findViewById(R.id.inspiration_list_footer);
+		View footerView = getLayoutInflater().inflate(R.layout.list_footer_view, null);
 		mInspirationList.addFooterView(footerView);
 
 		//TODO event handlers for buttons
