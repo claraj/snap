@@ -41,22 +41,11 @@ public class InspirationList extends ActionBarActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_inspiration_list);
 
-
-		//Populate the list
-		//set up search handlers
-
-
-
 		configureDatabase();
-
 
 		addTestData();
 
-
 		configureListView();
-		populateList();
-
-
 
 	}
 
@@ -70,23 +59,16 @@ public class InspirationList extends ActionBarActivity {
 		mDatabaseManager.addNote(test2);
 		mDatabaseManager.addNote(test3);
 
-
 	}
 
 	private void configureListView() {
 
-
-
 		mInspirationList = (ListView)findViewById(R.id.inspiration_list);
 
-
-		//Add footer view with add button
-
+		//Add footer view with add buttons
 
 		View footerView = getLayoutInflater().inflate(R.layout.list_footer_view, null);
 		mInspirationList.addFooterView(footerView);
-
-		//TODO event handlers for buttons
 
 		Button addNote = (Button)findViewById(R.id.add_note_button);
 		addNote.setOnClickListener(new View.OnClickListener() {
@@ -97,7 +79,6 @@ public class InspirationList extends ActionBarActivity {
 			}
 		});
 
-
 		Button addPicture = (Button)findViewById(R.id.add_picture_button);
 		addPicture.setOnClickListener(new View.OnClickListener() {
 			@Override
@@ -107,22 +88,10 @@ public class InspirationList extends ActionBarActivity {
 			}
 		});
 
-
 		//TODO Add header with search bar/searchview
-
 
 		//Call adapter after setting footer/header
 		mInspirationList.setAdapter(new ListDataProvider(this, mDatabaseManager));
-
-
-	}
-
-	private void populateList() {
-
-		//TODO - this will come from a database
-
-
-
 
 	}
 

@@ -24,7 +24,7 @@ public class DatabaseManager {
 	private static SQLHelper helper;
 	private static SQLiteDatabase db;
 	private static final String DB_NAME = "inspiration_items";
-	private static final int DB_VERSION = 1;
+	private static final int DB_VERSION = 2;
 
 	//Schema stuff - table names
 
@@ -47,7 +47,7 @@ public class DatabaseManager {
 	protected static final String PICTURE_HASHTAGS_COL = "picture_hashtags";
 
 
-	private boolean cacheInvalid = false;
+	private boolean cacheValid = false;
 	ArrayList<InspirationItem> allInspirationsCache = new ArrayList<>();
 
 
@@ -64,7 +64,9 @@ public class DatabaseManager {
 
 	public InspirationItem getItemForPosition(int position) {
 
-		if (cacheInvalid) {
+
+
+		if (cacheValid == false) {    //if cache is NOT valid...
 
 
 			Log.i(TAG, "cache invalid, recreating arraylist");
@@ -76,9 +78,9 @@ public class DatabaseManager {
 
 
 
-			//Query: select * from notes; select * from pictures
+			//Query: select * from notes; select * from notes table
 
-			Cursor noteCursor = db.query(PICTURE_TABLE, null, null, null, null, null, null);
+			Cursor noteCursor = db.query(NOTES_TABLE, null, null, null, null, null, null);
 
 			int id; String text, create, mod;
 			noteCursor.moveToFirst();
@@ -88,41 +90,59 @@ public class DatabaseManager {
 				create = noteCursor.getString(2);
 				mod = noteCursor.getString(3);
 				Note note = new Note(id, text, create, mod);
+				Log.i(TAG, "adding Note to cache " + note.toString());
 				allInspirationsCache.add(note);
+				noteCursor.moveToNext();
 			}
 
 
 			Cursor pictureCursor = db.query(PICTURE_TABLE, null, null, null, null, null, null);
 
 			String tags, uri;
-			noteCursor.moveToFirst();
-			while (noteCursor.isAfterLast() == false) {
-				id = noteCursor.getInt(0);
-				uri = noteCursor.getString(1);
-				create = noteCursor.getString(2);
-				mod = noteCursor.getString(3);
-				tags = noteCursor.getString(4);
+			pictureCursor.moveToFirst();
+			while (pictureCursor.isAfterLast() == false) {
+				id = pictureCursor.getInt(0);
+				uri = pictureCursor.getString(1);
+				create = pictureCursor.getString(2);
+				mod = pictureCursor.getString(3);
+				tags = pictureCursor.getString(4);
 
 				Picture picture = new Picture(id, uri, create, mod, tags);
 				allInspirationsCache.add(picture);
+
+				pictureCursor.moveToNext();
 			}
 
 
 			Collections.sort(allInspirationsCache);   //Sort by date order
 
-			cacheInvalid = false;
+			cacheValid = true;
 
 		}
 
-		return allInspirationsCache.get(position);
+		try {
+			return allInspirationsCache.get(position);
+		}  catch (ArrayIndexOutOfBoundsException ae) {
+			Log.e(TAG, "requesting item not in cache" + position + allInspirationsCache.size() ,  ae);
+			return null;
+		}
 	}
 
+
+	public void spewToLogCat(){    //TODO testing only get rid of this
+
+		getItemForPosition(0);
+
+
+
+
+	}
 
 	public void addInspirationItem() {
 		//TODO
 		//What table to add it to? Need two separate methods for picture, note?
 
-		cacheInvalid = true;  //need to rebuild cache
+		cacheValid = false;  //need to rebuild cache
 
 	}
 
@@ -138,6 +158,9 @@ public class DatabaseManager {
 
 		try {
 			db.insertOrThrow(NOTES_TABLE, null, newNote);
+
+			cacheValid = false;
+
 		} catch (SQLException sqle) {
 			Log.e(TAG, "Error inserting " + note + " into database", sqle);
 			//TODO don't fail silently
@@ -149,12 +172,13 @@ public class DatabaseManager {
 
 	public void addPicture(Picture picture) {
 
+		cacheValid = false;
 	//TODO
 	}
 
 	public int getInspirationItemCount() {
 
-		if (cacheInvalid) {
+		if (cacheValid == false) {
 
 			String countNotes = "SELECT Count(*) from " + NOTES_TABLE;
 			String countPictures = "SELECT Count(*) from " + PICTURE_TABLE;
