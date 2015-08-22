@@ -1,11 +1,14 @@
 package com.example.hello.inspirationboard;
 
+import android.content.Intent;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Adapter;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -30,6 +33,9 @@ public class InspirationList extends ActionBarActivity {
 
 
 	private static String TAG = "Inspiration list main class";
+
+	private static int NEW_NOTE_REQUEST_CODE = 1;
+	private static int NEW_PICTURE_REQUEST_CODE = 2;
 
 	//TODO progress bar while list loads
 
@@ -91,7 +97,12 @@ public class InspirationList extends ActionBarActivity {
 		//TODO Add header with search bar/searchview
 
 		//Call adapter after setting footer/header
-		mInspirationList.setAdapter(new ListDataProvider(this, mDatabaseManager));
+
+		ListDataProvider adapter = new ListDataProvider(this, mDatabaseManager);
+
+		mInspirationList.setAdapter(adapter);
+
+//		mInspirationList.setAdapter(new ListDataProvider(this, mDatabaseManager));
 
 	}
 
@@ -106,13 +117,47 @@ public class InspirationList extends ActionBarActivity {
 	private void addNote(){
 		//TODO
 
+		Intent newNote = new Intent(this, AddNoteActivity.class);
+		startActivityForResult(newNote, NEW_NOTE_REQUEST_CODE);
 
 	}
+
+
+	@Override
+	protected void onActivityResult(int request, int result, Intent data){
+
+		if (request == NEW_NOTE_REQUEST_CODE && result == RESULT_OK) {
+
+			//Extract text, generate new note, add to DB.
+
+			String newNoteText = data.getExtras().getString(AddNoteActivity.NEW_NOTE_TEXT);
+
+			if (newNoteText == null || newNoteText.length() == 0) {
+				return;
+			}
+
+			Note newNote = new Note(newNoteText, new Date(), new Date());
+			mDatabaseManager.addNote(newNote);
+
+			//Tell adapter to update;
+//TODO this is not how you do this. test
+			mInspirationList.setAdapter(new ListDataProvider(this, mDatabaseManager));
+
+
+			//
+			// ;
+			Log.i(TAG, "Added note:" + newNote.toString());
+		}
+
+
+	}
+
 
 	private void addPicture () {
 		Log.i(TAG, "Add picture not implemented");
 		//TODO
 	}
+
 
 	//Override to ensure DB is closed when user navigates away from app
 	//TEST: this will happen when user views a note/picture. TODO Ensure it is re-opened to refresh list.

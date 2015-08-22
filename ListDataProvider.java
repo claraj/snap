@@ -5,6 +5,7 @@ import android.database.DataSetObserver;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
 import android.widget.TextView;
 
@@ -12,6 +13,7 @@ import android.widget.TextView;
  * Created by admin on 8/22/15.
  */
 public class ListDataProvider implements ListAdapter{
+//public class ListDataProvider extends ArrayAdapter<InspirationItem>{
 
 
 	//TODO this must talk to DB and get items for list in correct order
@@ -21,10 +23,16 @@ public class ListDataProvider implements ListAdapter{
 	private Context mAppContext;
 	private DatabaseManager mDb;
 
-	ListDataProvider(Context appContext, DatabaseManager db) {
+	public ListDataProvider() {
+
+	}
+
+	public ListDataProvider(Context appContext, DatabaseManager db) {
 		mAppContext = appContext;
 		mDb = db;
 	}
+
+
 
 	@Override
 	public boolean areAllItemsEnabled() {
@@ -49,7 +57,7 @@ public class ListDataProvider implements ListAdapter{
 	@Override
 	public int getCount() {
 
-		//ASK database how many things
+		//Ask database how many things
 
 
 		int itemCount = mDb.getInspirationItemCount();
@@ -63,7 +71,7 @@ public class ListDataProvider implements ListAdapter{
 	}
 
 	@Override
-	public Object getItem(int position) {
+	public InspirationItem getItem(int position) {
 
 
 		Log.i(TAG, "getting item for position " + position);

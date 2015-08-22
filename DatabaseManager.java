@@ -24,7 +24,7 @@ public class DatabaseManager {
 	private static SQLHelper helper;
 	private static SQLiteDatabase db;
 	private static final String DB_NAME = "inspiration_items";
-	private static final int DB_VERSION = 2;
+	private static final int DB_VERSION = 3;
 
 	//Schema stuff - table names
 
@@ -64,6 +64,8 @@ public class DatabaseManager {
 
 	public InspirationItem getItemForPosition(int position) {
 
+
+		this.db = helper.getWritableDatabase();
 
 
 		if (cacheValid == false) {    //if cache is NOT valid...
@@ -120,6 +122,9 @@ public class DatabaseManager {
 
 		}
 
+
+		close();
+
 		try {
 			return allInspirationsCache.get(position);
 		}  catch (ArrayIndexOutOfBoundsException ae) {
@@ -129,14 +134,6 @@ public class DatabaseManager {
 	}
 
 
-	public void spewToLogCat(){    //TODO testing only get rid of this
-
-		getItemForPosition(0);
-
-
-
-
-	}
 
 	public void addInspirationItem() {
 		//TODO
@@ -150,6 +147,10 @@ public class DatabaseManager {
 	public void addNote(Note note){
 
 		//SQL query to add new note
+
+		this.db = helper.getWritableDatabase();
+
+
 
 		ContentValues newNote = new ContentValues();
 		newNote.put(NOTE_TEXT_COL, note.getText());
@@ -166,6 +167,7 @@ public class DatabaseManager {
 			//TODO don't fail silently
 		}
 
+		close();
 
 	}
 
@@ -177,6 +179,9 @@ public class DatabaseManager {
 	}
 
 	public int getInspirationItemCount() {
+
+		this.db = helper.getWritableDatabase();
+
 
 		if (cacheValid == false) {
 
@@ -193,11 +198,14 @@ public class DatabaseManager {
 
 			Log.i(TAG, "Note count " + noteCount + " pic count " + pictureCount);
 
+			close();
+
 			return (pictureCount + noteCount);
 
 
 		}
 		else {
+			close();
 			return allInspirationsCache.size();
 		}
 	}
