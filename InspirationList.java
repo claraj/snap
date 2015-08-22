@@ -51,15 +51,16 @@ public class InspirationList extends ActionBarActivity {
 
 		mInspirationList = (ListView)findViewById(R.id.inspiration_list);
 
-		mInspirationList.setAdapter(new ListDataProvider(this));
+		mInspirationList.setAdapter(new ListDataProvider(this, mDatabaseManager));
 
 
 
 	}
 
 	private void configureDatabase() {
-		//TODO
+		//TODO - what else?
 
+		mDatabaseManager = new DatabaseManager(this);
 
 	}
 

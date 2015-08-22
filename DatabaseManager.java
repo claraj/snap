@@ -51,6 +51,17 @@ public class DatabaseManager {
 		helper.close();
 	}
 
+
+	public InspirationItem getItemForPosition(int position) {
+
+		//Formulate a qu
+
+		return null;
+
+		//TODO!!
+	}
+
+
 	//Inner class
 	class SQLHelper extends SQLiteOpenHelper {
 

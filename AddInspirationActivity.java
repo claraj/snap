@@ -10,6 +10,6 @@ public abstract class AddInspirationActivity extends Activity {
 
 	//Abstract methods?
 
-	//
+	//TODO
 
 }

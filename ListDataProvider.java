@@ -13,10 +13,15 @@ import android.widget.TextView;
 public class ListDataProvider implements ListAdapter{
 
 
-	private Context mAppContext;
+	//TOOD this must talk to DB and get items for list in correct order
 
-	ListDataProvider(Context appContext) {
+
+	private Context mAppContext;
+	private DatabaseManager mDb;
+
+	ListDataProvider(Context appContext, DatabaseManager db) {
 		mAppContext = appContext;
+		mDb = db;
 	}
 
 	@Override
@@ -65,8 +70,15 @@ public class ListDataProvider implements ListAdapter{
 
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
-		TextView testing = new TextView(mAppContext);  testing.setText("testing");
-		return testing;
+
+		//TODO must talk to DB.
+
+		InspirationItem item = mDb.getItemForPosition(position);
+
+		return item.getView(mAppContext, parent);
+
+
+
 	}
 
 	@Override
