@@ -210,6 +210,27 @@ public class DatabaseManager {
 		}
 	}
 
+	public void updateNote(Note updated) {
+
+		//Find notes with this ID in database and change it's text and modified date.
+
+		this.db = helper.getWritableDatabase();
+
+		ContentValues newNoteData = new ContentValues();
+		newNoteData.put(NOTE_TEXT_COL, updated.getText());
+		newNoteData.put(NOTE_DATE_LAST_MOD_COL, updated.getDateModifiedAsString());
+
+		String whereClause = NOTE_ID_COL + " = " + Integer.toString(updated.mDatabaseID);
+
+		Log.i(TAG, "updating " + updated.toString() + " " + whereClause);
+
+		int rowsUpdated = db.update(NOTES_TABLE, newNoteData, whereClause, null );
+
+		cacheValid = false;
+		close();
+
+	}
+
 
 	//Inner class
 	class SQLHelper extends SQLiteOpenHelper {

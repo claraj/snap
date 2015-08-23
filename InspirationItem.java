@@ -4,6 +4,7 @@ import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
 
+import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -41,7 +42,8 @@ public abstract class InspirationItem implements Comparable<InspirationItem> {
 		//If another is later in time, return +1
 		//		If another is the same time, return 0;
 
-		return this.mDateLastModified.compareTo(another.mDateLastModified);
+		//Using Date.compareTo has the oldest things first. SO have to reverse sign.
+		return -(this.mDateLastModified.compareTo(another.mDateLastModified));
 
 
 	}
