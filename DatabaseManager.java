@@ -76,9 +76,6 @@ public class DatabaseManager {
 			allInspirationsCache = new ArrayList<>();  //wipe the cache
 
 			//Formulate a query. Fetch everything from all tables, sort in date order, return position-th item.
-			//TODO cache this until a new item is added.
-
-
 
 			//Query: select * from notes; select * from notes table
 
@@ -229,6 +226,47 @@ public class DatabaseManager {
 		cacheValid = false;
 		close();
 
+	}
+
+	public void delete(InspirationItem item) {
+
+		//What type of thing is this?
+
+		int db_id = 0; //TODO FIX TO CORRECT ID
+
+		db = helper.getWritableDatabase();
+
+		ContentValues deleteNoteData = new ContentValues();
+		deleteNoteData.put(NOTE_ID_COL, db_id);
+
+		if (item instanceof Note) {
+
+			String whereClause = NOTE_ID_COL + " = " + Integer.toString(db_id);  //alternative: stringformat
+
+			db.delete(NOTES_TABLE, whereClause, null);
+
+			cacheValid = false;
+
+			close();
+		}
+		//SQL needed: DELETE FROM NOTESTABLE WHERE ID = WHATEVERITIS
+
+		else if (item instanceof Picture) {
+
+			String whereClause = PICTURE_ID_COL + " = " + Integer.toString(db_id);  //alternative: stringformat
+
+			db.delete(PICTURE_TABLE, whereClause, null);
+
+			cacheValid = false;
+
+			close();
+
+
+		}
+
+		else {
+			Log.e(TAG, "shouldn't be here, unknown type for which delete has not been implemented");
+		}
 	}
 
 

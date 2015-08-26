@@ -14,7 +14,7 @@ import java.util.Date;
  */
 public class AddNoteActivity extends AddInspirationActivity {
 
-//TODO two different types of behavro -  editing existing OR creating new?
+//TODO two different types of behavior -  editing existing OR creating new?
 
 
 	//public final static String NEW_NOTE_TEXT = "New note text from add note activity";

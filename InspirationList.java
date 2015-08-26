@@ -4,7 +4,9 @@ import android.content.Intent;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.ContextMenu;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Adapter;
@@ -23,7 +25,7 @@ import java.util.Date;
 //TODO Way to delete (long press on list item + context menu)
 //TODO Tap list item to view note or picture in new Activity
 //TODO Add pictures and hashtags
-//TODO Needs to be in fragments BECAUSE tablet view is different to phone BUT this prototype is for a phone
+//TODO Needs to be in fragments BECAUSE tablet view is different to phone BUT this prototype is for a phone (so far)
 //TODO show modified dates in ListView
 //TODO Back button saves note too
 
@@ -137,20 +139,64 @@ public class InspirationList extends ActionBarActivity {
 			}
 		});
 
-		mInspirationList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+		/*mInspirationList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
 			@Override
 			public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
 				return false;
 				//TODO context menu to delete this item
 			}
-		});
+		});*/
+
+		//Indicate that the list view should display a context menu on long-press
+		registerForContextMenu(mInspirationList);
+
+
+
+
 
 //		mInspirationList.setAdapter(new ListDataProvider(this, mDatabaseManager));
 
 	}
 
+
+	@Override
+	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+		super.onCreateContextMenu(menu, v, menuInfo);
+		MenuInflater inflater = getMenuInflater();
+		inflater.inflate(R.menu.inspiration_list_context_menu, menu);
+	}
+
+	//If the menu item is handled here, then return true. Otherwise, return false.
+	@Override
+	public boolean onContextItemSelected(MenuItem item) {
+		AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+		switch (item.getItemId()) {
+			case R.id.delete_inspiration_menu:
+				deleteItem(item.getItemId(), info.position);
+				return true;
+			default:
+				return super.onContextItemSelected(item);
+		}
+
+
+	}
+
+
+	protected void deleteItem(int itemId, int listPosition) {
+
+		Log.i(TAG, "context menu click on " + itemId + " list position" + listPosition);
+
+
+		InspirationItem item = mListAdapter.getItem(listPosition); //todo! this is NOT working
+		//get Inspiration which corresponds to this ID
+
+		mDatabaseManager.delete(item);
+
+
+	}
+
 	private void configureDatabase() {
-		//TODO - what else?
+		//TODO - anything else?
 
 		mDatabaseManager = new DatabaseManager(this);
 
