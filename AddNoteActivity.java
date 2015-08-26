@@ -80,7 +80,7 @@ public class AddNoteActivity extends AddInspirationActivity {
 			@Override
 			public void onClick(View v) {
 
-				textEntered.setText("");   //clear screen
+				textEntered.setText("");   //clear screen //TODO avoid final declaration?
 				setResult(RESULT_CANCELED);
 				finish();
 			}
