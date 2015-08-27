@@ -15,8 +15,20 @@ import java.util.Collections;
  * Created by admin on 8/22/15.
  */
 
+
+
+
 public class DatabaseManager {
 
+
+
+	//TODO use SQLite Date functions to store dates more effectively
+
+
+	//Todo ignore case for filter
+
+
+	//todo
 
 	private final static String TAG = "DATABASE MANAGER";
 
@@ -46,11 +58,6 @@ public class DatabaseManager {
 	protected static final String PICTURE_URI_COL = "picture_uri";
 	protected static final String PICTURE_HASHTAGS_COL = "picture_hashtags";
 
-
-	private boolean cacheValid = false;
-	ArrayList<InspirationItem> allInspirationsCache = new ArrayList<>();
-
-
 	//Singleton class
 
 	private static final DatabaseManager INSTANCE = new DatabaseManager();
@@ -69,24 +76,14 @@ public class DatabaseManager {
 	}
 
 
-
-/*
-	public DatabaseManager(Context c) {
-			}
-	*/
-
-
 	public void close() {
 		helper.close();
 	}
 
 
-
 	public Picture getPicture(long id) {
 
-
 		//SELECT * FROM PICTURES WHERE ID = ID
-
 
 		db = helper.getReadableDatabase();
 
@@ -100,16 +97,12 @@ public class DatabaseManager {
 		Picture picture = null;
 
 		if (cursor.getCount() == 0 ) {
-			//No rows, error
-
 			Log.e(TAG, "no picture found in DB for id " + id);
-
 		}
 
 		else if (cursor.getCount() == 1 ) {
 
-			//cool - found one picture
-
+			//cool - found exactly one picture
 			cursor.moveToFirst();
 
 			String uri = cursor.getString(1);
@@ -118,12 +111,10 @@ public class DatabaseManager {
 			String tags = cursor.getString(4);
 
 			picture = new Picture(id, uri, create, mod, tags);
-
 		}
 
 		else {
 			//more than one picture returned for this id
-
 			Log.e(TAG, "ERROR more than one picture for ID " + id);
 		}
 
@@ -132,73 +123,12 @@ public class DatabaseManager {
 
 		return picture;   /// So will return null if 0 or more than 1 picture found.
 
-
 	}
 
-	public InspirationItem getItemForPosition(int position) {
+	/*public InspirationItem getItemForPosition(int position) {
 
 
 		buildCache();
-
-//		this.db = helper.getReadableDatabase();
-//
-//
-//		if (cacheValid == false) {    //if cache is NOT valid...
-//
-//
-//			Log.i(TAG, "cache invalid, recreating arraylist");
-//
-//			allInspirationsCache = new ArrayList<>();  //wipe the cache
-//
-//			//Formulate a query. Fetch everything from all tables, sort in date order, return position-th item.
-//
-//			//Query: select * from notes; select * from notes table
-//
-//			Cursor noteCursor = db.query(NOTES_TABLE, null, null, null, null, null, null);
-//
-//			int id; String text, create, mod;
-//			noteCursor.moveToFirst();
-//			while (noteCursor.isAfterLast() == false) {
-//				id = noteCursor.getInt(0);
-//				text = noteCursor.getString(1);
-//				create = noteCursor.getString(2);
-//				mod = noteCursor.getString(3);
-//				Note note = new Note(id, text, create, mod);
-//				Log.i(TAG, "adding Note to cache " + note.toString());
-//				allInspirationsCache.add(note);
-//				noteCursor.moveToNext();
-//			}
-//
-//			noteCursor.close();
-//
-//			Cursor pictureCursor = db.query(PICTURE_TABLE, null, null, null, null, null, null);
-//
-//			String tags, uri;
-//			pictureCursor.moveToFirst();
-//			while (pictureCursor.isAfterLast() == false) {
-//				id = pictureCursor.getInt(0);
-//				uri = pictureCursor.getString(1);
-//				create = pictureCursor.getString(2);
-//				mod = pictureCursor.getString(3);
-//				tags = pictureCursor.getString(4);
-//
-//				Picture picture = new Picture(id, uri, create, mod, tags);
-//				allInspirationsCache.add(picture);
-//
-//				pictureCursor.moveToNext();
-//			}
-//
-//
-//			pictureCursor.close();
-//
-//			Collections.sort(allInspirationsCache);   //Sort by date order
-//
-//			cacheValid = true;
-//
-//		}
-//
-//
-//		close();
 
 		try {
 			return allInspirationsCache.get(position);
@@ -206,110 +136,79 @@ public class DatabaseManager {
 			Log.e(TAG, "requesting item not in cache" + position + allInspirationsCache.size() ,  ae);
 			return null;
 		}
-	}
+	}*/
 
 
-	private void buildCache() {
+	public InspirationItem getItemForPosition(int position, String filter) {
+
+		//Formulate a query. Fetch everything from all tables, sort in date order, return position-th item.
+
+		//Query: select * from notes; select * from notes table
+
+		//Optionally filter the results
+
+		//TODO there MUST be SQL that does this for me.  some kind of unions? The goal is to get all the data, sort by date, return position'th item.
+
+		db = helper.getReadableDatabase();
+
+		ArrayList<InspirationItem> allData = new ArrayList<>();
+
+		String noteWhereClause = null;
+		String pictureWhereClause = null;
+
+		if (filter != null) {
+			noteWhereClause = NOTE_TEXT_COL + " LIKE '%" + filter + "%'";
+			pictureWhereClause = PICTURE_HASHTAGS_COL + " LIKE '%" + filter + "%'";
+		}
+
+		Cursor noteCursor = db.query(NOTES_TABLE, null, noteWhereClause, null, null, null, null);
+
+		int id; String text, create, mod;
+		noteCursor.moveToFirst();
+		while (noteCursor.isAfterLast() == false) {
+			id = noteCursor.getInt(0);
+			text = noteCursor.getString(1);
+			create = noteCursor.getString(2);
+			mod = noteCursor.getString(3);
+			Note note = new Note(id, text, create, mod);
+			Log.i(TAG, "Read this note from DB: " + note.toString());
+
+			noteCursor.moveToNext();
+			allData.add(note);
+		}
 
 
-		this.db = helper.getReadableDatabase();
+		Cursor pictureCursor = db.query(PICTURE_TABLE, null, pictureWhereClause, null, null, null, null);
 
+		String tags, uri;
+		pictureCursor.moveToFirst();
+		while (pictureCursor.isAfterLast() == false) {
+			id = pictureCursor.getInt(0);
+			uri = pictureCursor.getString(1);
+			create = pictureCursor.getString(2);
+			mod = pictureCursor.getString(3);
+			tags = pictureCursor.getString(4);
 
-		if (cacheValid == false) {    //if cache is NOT valid...
+			Picture picture = new Picture(id, uri, create, mod, tags);
 
-
-			Log.i(TAG, "cache invalid, building recreating arraylist");
-
-			allInspirationsCache = new ArrayList<>();  //wipe the cache
-
-			//Formulate a query. Fetch everything from all tables, sort in date order, return position-th item.
-
-			//Query: select * from notes; select * from notes table
-
-			Cursor noteCursor = db.query(NOTES_TABLE, null, null, null, null, null, null);
-
-			int id; String text, create, mod;
-			noteCursor.moveToFirst();
-			while (noteCursor.isAfterLast() == false) {
-				id = noteCursor.getInt(0);
-				text = noteCursor.getString(1);
-				create = noteCursor.getString(2);
-				mod = noteCursor.getString(3);
-				Note note = new Note(id, text, create, mod);
-				Log.i(TAG, "adding Note to cache " + note.toString());
-				allInspirationsCache.add(note);
-				noteCursor.moveToNext();
-			}
-
-			noteCursor.close();
-
-			Cursor pictureCursor = db.query(PICTURE_TABLE, null, null, null, null, null, null);
-
-			String tags, uri;
-			pictureCursor.moveToFirst();
-			while (pictureCursor.isAfterLast() == false) {
-				id = pictureCursor.getInt(0);
-				uri = pictureCursor.getString(1);
-				create = pictureCursor.getString(2);
-				mod = pictureCursor.getString(3);
-				tags = pictureCursor.getString(4);
-
-				Picture picture = new Picture(id, uri, create, mod, tags);
-				allInspirationsCache.add(picture);
-
-				pictureCursor.moveToNext();
-			}
-
-
-			pictureCursor.close();
-
-			Collections.sort(allInspirationsCache);   //Sort by date order
-
-			cacheValid = true;
+			pictureCursor.moveToNext();
+			allData.add(picture);
 
 		}
 
-		close();
+		noteCursor.close();
+		pictureCursor.close();
+		db.close();
 
-	}
 
+		Collections.sort(allData);
 
-
-	public ArrayList<InspirationItem> search(String searchText) {
-
-		ArrayList<InspirationItem> matches = new ArrayList<>();
-
-		//search notes
-
-		//select * from notes where text like %text%
-
-		//select * from pictures where hashtags like %text%
-
-		//sort and return in date order
-
-		if (!cacheValid) {
-			buildCache();
+		try {
+			return allData.get(position);
+		} catch (IndexOutOfBoundsException ie ) {
+			Log.e(TAG, "Fetching element " + position + " from this dataset" + allData);
+			return null;
 		}
-
-			for (InspirationItem i : allInspirationsCache ) {
-
-				if (i instanceof Note) {
-					Note n = (Note) i;
-					if (n.getText().contains(searchText)) {
-						matches.add(n);
-					}
-				}
-
-				if (i instanceof Picture) {
-					Picture p = (Picture) i;
-					if (p.getHashtags().contains(searchText)) {
-						matches.add(p);
-					}
-				}
-
-			}
-
-		return matches;
 
 	}
 
@@ -344,11 +243,11 @@ public class DatabaseManager {
 		}
 
 
-		cacheValid = false;
+	//	cacheValid = false;
 
 		//TODO what to do with note id?
 
-		close();
+		db.close();
 
 		return id;
 	}
@@ -374,43 +273,68 @@ public class DatabaseManager {
 			Log.e(TAG, "fail on insert picture: " + picture.toString(), sqle);
 		}
 
-		cacheValid = false;
+	//	cacheValid = false;
 		db.close();
 		return id;
 
 
 	}
 
-	public int getInspirationItemCount() {
+	public int getInspirationItemCount(String filter) {
 
-		this.db = helper.getWritableDatabase();
+		this.db = helper.getReadableDatabase();
 
 
-		if (cacheValid == false) {
+		if (filter == null) {
 
 			String countNotes = "SELECT Count(*) from " + NOTES_TABLE;
 			String countPictures = "SELECT Count(*) from " + PICTURE_TABLE;
 
+
 			Cursor noteCountCursor = db.rawQuery(countNotes, null);
 			noteCountCursor.moveToFirst();
-			int noteCount =  noteCountCursor.getInt(0);  //TODO TEST
+			int noteCount = noteCountCursor.getInt(0);  //TODO TEST
 
 			Cursor picCountCursor = db.rawQuery(countPictures, null);
 			picCountCursor.moveToFirst();
-			int pictureCount =  picCountCursor.getInt(0);  //TODO TEST
+			int pictureCount = picCountCursor.getInt(0);  //TODO TEST
 
 			Log.i(TAG, "Note count " + noteCount + " pic count " + pictureCount);
 
+			close();
+
+			noteCountCursor.close();
+			picCountCursor.close();
+
+			return (pictureCount + noteCount);
+
+		}  else {
+
+			String countNotes = "SELECT Count(*) from " + NOTES_TABLE + " WHERE " + NOTE_TEXT_COL + " LIKE '%" + filter + "%'";
+			Log.i(TAG, "Count notes query with filter of " + filter + " is " + countNotes);
+			String countPictures = "SELECT Count(*) from " + PICTURE_TABLE + " WHERE " + PICTURE_HASHTAGS_COL + " LIKE '%" + filter + "%'";
+			;
+
+
+			Cursor noteCountCursor = db.rawQuery(countNotes, null);
+			noteCountCursor.moveToFirst();
+			int noteCount = noteCountCursor.getInt(0);
+
+			Cursor picCountCursor = db.rawQuery(countPictures, null);
+			picCountCursor.moveToFirst();
+			int pictureCount = picCountCursor.getInt(0);
+
+			Log.i(TAG, "FILTERED Note count " + noteCount + " pic count " + pictureCount);
+
+			noteCountCursor.close();
+			picCountCursor.close();
 			close();
 
 			return (pictureCount + noteCount);
 
 
 		}
-		else {
-			close();
-			return allInspirationsCache.size();
-		}
+
 	}
 
 	public void updateNote(Note updated) {
@@ -429,20 +353,18 @@ public class DatabaseManager {
 
 		int rowsUpdated = db.update(NOTES_TABLE, newNoteData, whereClause, null );
 
-		cacheValid = false;
+		//cacheValid = false;
 		close();
 
 	}
 
 	public void delete(InspirationItem item) {
 
-		//What type of thing is this?
-
 		db = helper.getWritableDatabase();
 
 		long db_id = item.mDatabaseID;
 
-		//TODO a method call here.
+		//TODO a method call here?
 
 		if (item instanceof Note) {
 
@@ -455,7 +377,7 @@ public class DatabaseManager {
 			Object result = db.delete(NOTES_TABLE, whereClause, null);
 			Log.i(TAG, result.toString());
 
-			cacheValid = false;
+		//	cacheValid = false;
 
 			close();
 		}
@@ -467,7 +389,7 @@ public class DatabaseManager {
 
 			db.delete(PICTURE_TABLE, whereClause, null);
 
-			cacheValid = false;
+		//	cacheValid = false;
 
 			close();
 
@@ -496,7 +418,7 @@ public class DatabaseManager {
 
 		int rowsUpdated = db.update(PICTURE_TABLE, newPictureData, whereClause, null );
 
-		cacheValid = false;
+	//	cacheValid = false;
 		close();
 
 

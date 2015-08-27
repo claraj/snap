@@ -55,6 +55,8 @@ public class InspirationList extends ActionBarActivity {
 	public static String PICTURE_DB_ID = "id primary key from db for picture";
 
 
+	public static boolean searching = false;
+
 	private Uri pictureUri;
 
 
@@ -66,6 +68,8 @@ public class InspirationList extends ActionBarActivity {
 	private DatabaseManager mDatabaseManager;
 
 	private ListDataProvider mListAdapter;
+
+	private Button clearSearchButton;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -84,30 +88,47 @@ public class InspirationList extends ActionBarActivity {
 
 	private void configureSearchFeatures() {
 
-		final SearchView searchBox = (SearchView) findViewById(R.id.search_box);
 
-		searchBox.setOnSearchClickListener(new View.OnClickListener() {
+		clearSearchButton = (Button) findViewById(R.id.clear_search_button);
+		clearSearchButton.setVisibility(View.GONE);
+		clearSearchButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-
-
-				if (searchBox.getQuery() == null || searchBox.getQuery().toString().length() == 0) {
-					return;
-				}
-
-				//else search!
-
-				ArrayList<InspirationItem> matches = mDatabaseManager.search (searchBox.getQuery().toString());
-
-				//Do something...  //TODO do we modify what adapter displays?
-				//TODO must have back button returning to original list
-				//TODO must have a cancel or show all button
-
-
-
-
+				mListAdapter.clearSearchString();
+				Log.i(TAG, "clearing search string and hiding button");
+				clearSearchButton.setVisibility(View.GONE);
 			}
 		});
+
+		final SearchView searchBox = (SearchView) findViewById(R.id.search_box);
+
+		searchBox.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+			@Override
+			public boolean onQueryTextSubmit(String query) {
+				Log.i(TAG, "onquerytextchanged, submit: " + query);
+
+				if (query == null) {
+					return false;
+				}
+				if (query.length() == 0) {
+					return false;
+				}
+
+				mListAdapter.setSearchString(query);
+				refreshList();
+				clearSearchButton.setVisibility(View.VISIBLE);
+
+				return true;
+			}
+
+			@Override
+			public boolean onQueryTextChange(String newText) {
+				Log.i(TAG, "onquerytextchanged, : " + newText);
+				//otherwise ignore
+				return false;
+			}
+		});
+
 
 	}
 
@@ -258,8 +279,14 @@ public class InspirationList extends ActionBarActivity {
 
 		//replaces the list adapter. TODO this *can't* be the right way... can it?
 
+		String oldSearch = mListAdapter.getSearchString();
+
+		mListAdapter = new ListDataProvider(this, mDatabaseManager);
+		mListAdapter.setSearchString(oldSearch);
+
 		//TODO this can't be how you do this correctly.
-		mInspirationList.setAdapter(new ListDataProvider(this, mDatabaseManager));
+		mInspirationList.setAdapter(mListAdapter);
+
 
 		//TODO Try this...???? OR replace with ArrayLAdapter ???
 		//mInspirationList.invalidateViews();
