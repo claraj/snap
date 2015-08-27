@@ -23,9 +23,6 @@ public class ListDataProvider implements ListAdapter{
 	private Context mAppContext;
 	private DatabaseManager mDb;
 
-	public ListDataProvider() {
-
-	}
 
 	public ListDataProvider(Context appContext, DatabaseManager db) {
 		mAppContext = appContext;

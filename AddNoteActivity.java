@@ -75,6 +75,8 @@ public class AddNoteActivity extends AddInspirationActivity {
 		});
 
 
+
+
 		Button cancelButton = (Button) findViewById(R.id.cancel_note_button);
 		cancelButton.setOnClickListener(new View.OnClickListener() {
 			@Override

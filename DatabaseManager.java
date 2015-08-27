@@ -232,18 +232,22 @@ public class DatabaseManager {
 
 		//What type of thing is this?
 
-		int db_id = 0; //TODO FIX TO CORRECT ID
-
 		db = helper.getWritableDatabase();
 
-		ContentValues deleteNoteData = new ContentValues();
-		deleteNoteData.put(NOTE_ID_COL, db_id);
+		int db_id = item.mDatabaseID;
+
+		//TODO a method call here.
 
 		if (item instanceof Note) {
 
+
+			ContentValues deleteNoteData = new ContentValues();
+			deleteNoteData.put(NOTE_ID_COL, db_id);
+
 			String whereClause = NOTE_ID_COL + " = " + Integer.toString(db_id);  //alternative: stringformat
 
-			db.delete(NOTES_TABLE, whereClause, null);
+			Object result = db.delete(NOTES_TABLE, whereClause, null);
+			Log.i(TAG, result.toString());
 
 			cacheValid = false;
 
@@ -267,6 +271,7 @@ public class DatabaseManager {
 		else {
 			Log.e(TAG, "shouldn't be here, unknown type for which delete has not been implemented");
 		}
+
 	}
 
 

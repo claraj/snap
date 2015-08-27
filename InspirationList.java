@@ -22,8 +22,7 @@ import java.util.Date;
 
 
 //TODO Way to search (search bar at top of list)  TODO searchview instead of edittext
-//TODO Way to delete (long press on list item + context menu)
-//TODO Tap list item to view note or picture in new Activity
+//TODO Tap list item to view picture in new Activity
 //TODO Add pictures and hashtags
 //TODO Needs to be in fragments BECAUSE tablet view is different to phone BUT this prototype is for a phone (so far)
 //TODO show modified dates in ListView
@@ -185,13 +184,15 @@ public class InspirationList extends ActionBarActivity {
 	protected void deleteItem(int itemId, int listPosition) {
 
 		Log.i(TAG, "context menu click on " + itemId + " list position" + listPosition);
+		InspirationItem item = mListAdapter.getItem(listPosition);
 
+		Log.i(TAG, item.toString() );
 
-		InspirationItem item = mListAdapter.getItem(listPosition); //todo! this is NOT working
 		//get Inspiration which corresponds to this ID
 
 		mDatabaseManager.delete(item);
 
+		refreshList();
 
 	}
 
@@ -199,6 +200,21 @@ public class InspirationList extends ActionBarActivity {
 		//TODO - anything else?
 
 		mDatabaseManager = new DatabaseManager(this);
+
+	}
+
+
+	protected void refreshList(){
+
+		//replaces the list adapter. TODO this can't be the right way.
+
+		//TODO this can't be how you do this correctly.
+		mInspirationList.setAdapter(new ListDataProvider(this, mDatabaseManager));
+
+		//TODO Try this...???? OR replave with ArrayLAdapter and
+		//mInspirationList.invalidateViews();
+
+
 
 	}
 
@@ -231,9 +247,9 @@ public class InspirationList extends ActionBarActivity {
 			Note newNote = new Note(newNoteText, new Date(), new Date());
 			mDatabaseManager.addNote(newNote);
 
-			//Tell adapter to update;
-			//TODO this can't be how you do this correctly.
-			mInspirationList.setAdapter(new ListDataProvider(this, mDatabaseManager));
+			//Update list with latest content;
+
+			refreshList();
 
 			Log.i(TAG, "Added note:" + newNote.toString());
 		}

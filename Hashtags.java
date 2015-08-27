@@ -60,4 +60,8 @@ public class Hashtags {
 		};
 	}
 
+	public boolean contains(String tag) {
+		return mHashtags.contains(tag);
+	}
+
 }
