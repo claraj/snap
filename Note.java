@@ -30,7 +30,7 @@ public class Note extends InspirationItem {
 	}
 
 
-	public Note(int id, String text, Date created, Date lastMod) {
+	public Note(long id, String text, Date created, Date lastMod) {
 		this(text, created, lastMod);
 		mDatabaseID = id;
 
@@ -38,7 +38,7 @@ public class Note extends InspirationItem {
 
 
 
-	public Note(int id, String text, String created, String lastMod) {
+	public Note(long id, String text, String created, String lastMod) {
 
 		mText = text;
 

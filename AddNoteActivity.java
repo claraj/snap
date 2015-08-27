@@ -25,7 +25,7 @@ public class AddNoteActivity extends AddInspirationActivity {
 
 	protected void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_add_note);
+		setContentView(R.layout.activity_view_note);
 
 		final EditText textEntered = (EditText) findViewById(R.id.new_note_edittext);
 

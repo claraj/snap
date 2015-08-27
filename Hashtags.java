@@ -24,15 +24,30 @@ public class Hashtags {
 	}
 
 	public Hashtags(String tagString) {
+
+		mHashtags = new ArrayList<>();
+
 		String[] tags = tagString.split(SEPARATOR_CHAR);
-		for (String t : tags) {
-			mHashtags.add(t);
+
+
+		if (tags != null && tags.length > 0) {
+			for (String t : tags) {
+				mHashtags.add(t);
 		}
+		}
+
 	}
 
 	@Override
 	public String toString() {
+
+
 		String tagString = "";
+
+		if (mHashtags == null) {
+			return tagString;  //so return empty string
+		}
+
 		for (String t : mHashtags) {
 			tagString = tagString.concat(t);
 			tagString = tagString.concat(SEPARATOR_CHAR);

@@ -15,7 +15,7 @@ public abstract class InspirationItem implements Comparable<InspirationItem> {
 
 	protected Date mDateLastModified;
 	protected Date mDateCreated;
-	protected int mDatabaseID;
+	protected long mDatabaseID;
 
 	public static final String DATE_FORMAT_STRING =  "EEE MMM d yyyy @ HH:mm" ;
 

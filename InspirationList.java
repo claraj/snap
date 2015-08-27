@@ -1,6 +1,10 @@
 package com.example.hello.inspirationboard;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.net.Uri;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -16,9 +20,9 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import java.io.File;
 import java.util.Date;
-
-
+import java.util.UUID;
 
 
 //TODO Way to search (search bar at top of list)  TODO searchview instead of edittext
@@ -42,9 +46,17 @@ public class InspirationList extends ActionBarActivity {
 
 
 	public static String NOTE_DB_ID = "id primary key from database";
-	public static String NOTE_CREATE_DATE = "date note created";
+	public static String NOTE_CREATE_DATE = "date note created";   //TODO remove these and just send ID,
 	public static String NOTE_TEXT = "note's text";
 	public static String EDIT_EXISTING_NOTE = "edit existing? ";
+
+
+	public static String PICTURE_DB_ID = "id primary key from db for picture";
+
+
+	private Uri pictureUri;
+
+
 ;	//TODO progress bar while list loads
 
 	private ListView mInspirationList;
@@ -123,6 +135,8 @@ public class InspirationList extends ActionBarActivity {
 				if (item instanceof Note) {
 					//TODO open Note Activity for reading, editing.
 
+					//TODO just send the ID and have the activity fetch the rest of stuff from the DB.
+
 					Intent editViewNote = new Intent(InspirationList.this, AddNoteActivity.class);
 					editViewNote.putExtra(NOTE_DB_ID, item.mDatabaseID);
 					editViewNote.putExtra(NOTE_CREATE_DATE, item.mDateCreated);
@@ -134,26 +148,18 @@ public class InspirationList extends ActionBarActivity {
 
 				if (item instanceof Picture) {
 					//TODO picture Activity, view, edit hashtags etc.
+
+					Intent editViewPicture = new Intent(InspirationList.this, ViewPictureActivity.class);
+					editViewPicture.putExtra(PICTURE_DB_ID, item.mDatabaseID);
+					startActivity(editViewPicture);
+
+
 				}
 			}
 		});
 
-		/*mInspirationList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-			@Override
-			public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-				return false;
-				//TODO context menu to delete this item
-			}
-		});*/
-
 		//Indicate that the list view should display a context menu on long-press
 		registerForContextMenu(mInspirationList);
-
-
-
-
-
-//		mInspirationList.setAdapter(new ListDataProvider(this, mDatabaseManager));
 
 	}
 
@@ -185,11 +191,10 @@ public class InspirationList extends ActionBarActivity {
 
 		Log.i(TAG, "context menu click on " + itemId + " list position" + listPosition);
 		InspirationItem item = mListAdapter.getItem(listPosition);
-
 		Log.i(TAG, item.toString() );
-
 		//get Inspiration which corresponds to this ID
 
+		//TODO should work for Note and Picture - currently just Note //FIXME
 		mDatabaseManager.delete(item);
 
 		refreshList();
@@ -199,19 +204,19 @@ public class InspirationList extends ActionBarActivity {
 	private void configureDatabase() {
 		//TODO - anything else?
 
-		mDatabaseManager = new DatabaseManager(this);
+		mDatabaseManager = DatabaseManager.getInstance(this);
 
 	}
 
 
 	protected void refreshList(){
 
-		//replaces the list adapter. TODO this can't be the right way.
+		//replaces the list adapter. TODO this *can't* be the right way... can it?
 
 		//TODO this can't be how you do this correctly.
 		mInspirationList.setAdapter(new ListDataProvider(this, mDatabaseManager));
 
-		//TODO Try this...???? OR replave with ArrayLAdapter and
+		//TODO Try this...???? OR replace with ArrayLAdapter ???
 		//mInspirationList.invalidateViews();
 
 
@@ -220,7 +225,6 @@ public class InspirationList extends ActionBarActivity {
 
 
 	private void addNote(){
-		//TODO
 
 		Intent newNote = new Intent(this, AddNoteActivity.class);
 		newNote.putExtra(EDIT_EXISTING_NOTE, false);
@@ -261,15 +265,43 @@ public class InspirationList extends ActionBarActivity {
 			// new text for a current note. Must modify and update correct note in DB
 
 			Bundle b = data.getExtras();
-			int noteID = b.getInt(NOTE_DB_ID);
+			long noteID = b.getLong(NOTE_DB_ID);
 			Date created = (Date)b.getSerializable(NOTE_CREATE_DATE);
 			String text = b.getString(NOTE_TEXT);
 
 			Note updated = new Note(noteID, text, created, new Date());
 			mDatabaseManager.updateNote(updated);
 
-			//TODO this can't be how you do this correctly.
-			mInspirationList.setAdapter(new ListDataProvider(this, mDatabaseManager));
+			refreshList();
+
+
+		}
+
+
+		if (request == NEW_PICTURE_REQUEST_CODE && result == RESULT_OK) {
+
+			//Bitmap picture = (Bitmap) data.getExtras().get("data");
+
+			//pictureUri = data.getParcelableExtra(MediaStore.EXTRA_OUTPUT);
+
+			Picture newPicture = new Picture(pictureUri, new Date(), new Date(), null);
+
+			//Add to database
+
+			long newPictureID = mDatabaseManager.addPicture(newPicture);
+
+			refreshList();
+
+			//Start EditPictureActivity for user to view picture and add hashtags, if desired
+
+			Intent viewPicture = new Intent(InspirationList.this, ViewPictureActivity.class);
+
+			//Add the DB Id and launch viewPicture
+			viewPicture.putExtra(PICTURE_DB_ID, newPictureID);
+
+			startActivity(viewPicture);
+
+
 
 
 
@@ -279,8 +311,41 @@ public class InspirationList extends ActionBarActivity {
 
 
 	private void addPicture () {
-		Log.i(TAG, "Add picture not implemented");
-		//TODO
+		Log.i(TAG, "Add picture button click");
+
+		//Specify filename
+		//Use a UUID plus current date/time
+
+		UUID uuid = UUID.randomUUID();
+		String filename = "InspirationBoard_ " + new Date().toString() + "_" + uuid.toString() + ".jpg" ;
+
+
+		//remove suspect chars
+		filename = filename.replace(":", "+");
+		while (filename.contains(" ")) {
+			filename = filename.replace(" ", "+");
+		}
+
+
+		Log.i(TAG, "Will save this picture to " + filename);
+
+		//TODO look into different types of directories returned here.
+		File file = new File(Environment.getExternalStorageDirectory(), filename);
+
+
+		//TODO save original size *and* thumbnail to cut down on resizing when list is being drawn?
+		pictureUri = Uri.fromFile(file);
+
+		Intent takePicture = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+
+		takePicture.putExtra(MediaStore.EXTRA_OUTPUT, pictureUri);  //save my picture here plz
+
+		startActivityForResult(takePicture, NEW_PICTURE_REQUEST_CODE);
+
+
+
+
+
 	}
 
 

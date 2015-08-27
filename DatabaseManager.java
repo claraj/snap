@@ -18,13 +18,13 @@ import java.util.Collections;
 public class DatabaseManager {
 
 
-	private final String TAG = "DATABASE MANAGER";
+	private final static String TAG = "DATABASE MANAGER";
 
-	private Context mContext;
+	private static Context mContext;
 	private static SQLHelper helper;
 	private static SQLiteDatabase db;
 	private static final String DB_NAME = "inspiration_items";
-	private static final int DB_VERSION = 3;
+	private static final int DB_VERSION = 5;
 
 	//Schema stuff - table names
 
@@ -51,21 +51,94 @@ public class DatabaseManager {
 	ArrayList<InspirationItem> allInspirationsCache = new ArrayList<>();
 
 
-	public DatabaseManager(Context c) {
+	//Singleton class
+
+	private static final DatabaseManager INSTANCE = new DatabaseManager();
+
+	public static DatabaseManager getInstance(Context c) {
+
 		mContext = c;
-		helper = new SQLHelper(mContext);
-		this.db = helper.getWritableDatabase();
+
+		if (helper == null ) {
+			helper = new SQLHelper(c);
+		}
+		if (db == null) {
+			db = helper.getWritableDatabase();
+		}
+		return INSTANCE;
 	}
+
+
+
+/*
+	public DatabaseManager(Context c) {
+			}
+	*/
+
 
 	public void close() {
 		helper.close();
 	}
 
 
+
+	public Picture getPicture(long id) {
+
+
+		//SELECT * FROM PICTURES WHERE ID = ID
+
+
+		db = helper.getReadableDatabase();
+
+		ContentValues values = new ContentValues();
+		values.put(PICTURE_ID_COL, id);
+
+		String where = PICTURE_ID_COL + " = " + Long.toString(id);
+
+		Cursor cursor = db.query(PICTURE_TABLE, null, where, null, null, null, null);
+
+		Picture picture = null;
+
+		if (cursor.getCount() == 0 ) {
+			//No rows, error
+
+			Log.e(TAG, "no picture found in DB for id " + id);
+
+		}
+
+		else if (cursor.getCount() == 1 ) {
+
+			//cool - found one picture
+
+			cursor.moveToFirst();
+
+			String uri = cursor.getString(1);
+			String create = cursor.getString(2);
+			String mod = cursor.getString(3);
+			String tags = cursor.getString(4);
+
+			picture = new Picture(id, uri, create, mod, tags);
+
+		}
+
+		else {
+			//more than one picture returned for this id
+
+			Log.e(TAG, "ERROR more than one picture for ID " + id);
+		}
+
+		cursor.close();
+		db.close();
+
+		return picture;   /// So will return null if 0 or more than 1 picture found.
+
+
+	}
+
 	public InspirationItem getItemForPosition(int position) {
 
 
-		this.db = helper.getWritableDatabase();
+		this.db = helper.getReadableDatabase();
 
 
 		if (cacheValid == false) {    //if cache is NOT valid...
@@ -94,6 +167,7 @@ public class DatabaseManager {
 				noteCursor.moveToNext();
 			}
 
+			noteCursor.close();
 
 			Cursor pictureCursor = db.query(PICTURE_TABLE, null, null, null, null, null, null);
 
@@ -112,6 +186,8 @@ public class DatabaseManager {
 				pictureCursor.moveToNext();
 			}
 
+
+			pictureCursor.close();
 
 			Collections.sort(allInspirationsCache);   //Sort by date order
 
@@ -140,8 +216,9 @@ public class DatabaseManager {
 
 	}
 
+//RETURN the rowid aka primary key
 
-	public void addNote(Note note){
+	public long addNote(Note note){
 
 		//SQL query to add new note
 
@@ -154,25 +231,56 @@ public class DatabaseManager {
 		newNote.put(NOTE_DATE_CREATE_COL, note.getDateCreatedAsString());
 		newNote.put(NOTE_DATE_LAST_MOD_COL, note.getDateModifiedAsString());
 
-		try {
-			db.insertOrThrow(NOTES_TABLE, null, newNote);
 
-			cacheValid = false;
+		long id = -1;
+
+		try {
+
+			id = db.insertOrThrow(NOTES_TABLE, null, newNote);
+
 
 		} catch (SQLException sqle) {
 			Log.e(TAG, "Error inserting " + note + " into database", sqle);
 			//TODO don't fail silently
+
 		}
+
+
+		cacheValid = false;
+
+		//TODO what to do with note id?
 
 		close();
 
+		return id;
 	}
 
 
-	public void addPicture(Picture picture) {
+	//returns -1 if insert fails, also log message.
+	public long addPicture(Picture picture) {
+
+
+		db = helper.getWritableDatabase();
+
+		ContentValues newPictureData = new ContentValues();
+		newPictureData.put(PICTURE_DATE_CREATE_COL, picture.getDateCreatedAsString());
+		newPictureData.put(PICTURE_DATE_LAST_MOD_COL, picture.getDateModifiedAsString());
+		newPictureData.put(PICTURE_URI_COL, picture.getUriAsString());
+		newPictureData.put(PICTURE_HASHTAGS_COL, picture.getHashtagsAsString());
+
+		long id = -1;
+
+		try {
+			id = db.insertOrThrow(PICTURE_TABLE, null, newPictureData);
+		} catch (SQLException sqle ) {
+			Log.e(TAG, "fail on insert picture: " + picture.toString(), sqle);
+		}
 
 		cacheValid = false;
-	//TODO
+		db.close();
+		return id;
+
+
 	}
 
 	public int getInspirationItemCount() {
@@ -209,7 +317,7 @@ public class DatabaseManager {
 
 	public void updateNote(Note updated) {
 
-		//Find notes with this ID in database and change it's text and modified date.
+		//Find notes with this ID in database and change its text, also update modified date.
 
 		this.db = helper.getWritableDatabase();
 
@@ -217,7 +325,7 @@ public class DatabaseManager {
 		newNoteData.put(NOTE_TEXT_COL, updated.getText());
 		newNoteData.put(NOTE_DATE_LAST_MOD_COL, updated.getDateModifiedAsString());
 
-		String whereClause = NOTE_ID_COL + " = " + Integer.toString(updated.mDatabaseID);
+		String whereClause = NOTE_ID_COL + " = " + Long.toString(updated.mDatabaseID);
 
 		Log.i(TAG, "updating " + updated.toString() + " " + whereClause);
 
@@ -234,7 +342,7 @@ public class DatabaseManager {
 
 		db = helper.getWritableDatabase();
 
-		int db_id = item.mDatabaseID;
+		long db_id = item.mDatabaseID;
 
 		//TODO a method call here.
 
@@ -244,7 +352,7 @@ public class DatabaseManager {
 			ContentValues deleteNoteData = new ContentValues();
 			deleteNoteData.put(NOTE_ID_COL, db_id);
 
-			String whereClause = NOTE_ID_COL + " = " + Integer.toString(db_id);  //alternative: stringformat
+			String whereClause = NOTE_ID_COL + " = " + Long.toString(db_id);  //alternative: stringformat
 
 			Object result = db.delete(NOTES_TABLE, whereClause, null);
 			Log.i(TAG, result.toString());
@@ -257,7 +365,7 @@ public class DatabaseManager {
 
 		else if (item instanceof Picture) {
 
-			String whereClause = PICTURE_ID_COL + " = " + Integer.toString(db_id);  //alternative: stringformat
+			String whereClause = PICTURE_ID_COL + " = " + Long.toString(db_id);  //alternative: stringformat
 
 			db.delete(PICTURE_TABLE, whereClause, null);
 
@@ -274,9 +382,33 @@ public class DatabaseManager {
 
 	}
 
+	public void updatePicture(Picture updateMe) {
+
+		//Update picture hashtags and date modified
+
+		this.db = helper.getWritableDatabase();
+
+		ContentValues newPictureData = new ContentValues();
+		newPictureData.put(PICTURE_HASHTAGS_COL, updateMe.getHashtagsAsString());
+		newPictureData.put(PICTURE_DATE_LAST_MOD_COL, updateMe.getDateModifiedAsString());
+
+		String whereClause = PICTURE_ID_COL + " = " + Long.toString(updateMe.mDatabaseID);
+
+		Log.i(TAG, "updating " + updateMe.toString() + " " + whereClause);
+
+		int rowsUpdated = db.update(PICTURE_TABLE, newPictureData, whereClause, null );
+
+		cacheValid = false;
+		close();
+
+
+
+
+	}
+
 
 	//Inner class
-	class SQLHelper extends SQLiteOpenHelper {
+	static class SQLHelper extends SQLiteOpenHelper {
 
 		public SQLHelper(Context c) {
 			super(c, DB_NAME, null, DB_VERSION); {

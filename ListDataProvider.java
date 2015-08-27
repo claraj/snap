@@ -99,7 +99,7 @@ public class ListDataProvider implements ListAdapter{
 		Log.i(TAG, "getting view for position " + position);
 
 
-		InspirationItem item = mDb.getItemForPosition(position);
+		InspirationItem item = mDb.getItemForPosition(position);  //fixme
 
 		Log.i(TAG, "this view is " + item.toString());
 
