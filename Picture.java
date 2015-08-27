@@ -119,11 +119,13 @@ public class Picture extends InspirationItem {
 		dateModText.setText(getDateModifiedAsString());
 		TextView hashtagsText = (TextView)picView.findViewById(R.id.hashtags);
 		hashtagsText.setText(getHashtagsAsString());
+
+		Log.i(TAG, "the hashtags are as follows:" + getHashtagsAsString());
 		//TODO make hashtags scroll if too long???
 
 		//get image thumbnail.... ThumbnailUtils !
 
-		Bitmap imageThumbnail = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(getFileUri().toString()), mThumbnailWidth, mThumbnailHeight);
+		Bitmap imageThumbnail = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(getFileUri().getPath()), mThumbnailWidth, mThumbnailHeight);
 
 		ImageView thumbNailImageView = (ImageView)picView.findViewById(R.id.image_thumbnail);
 

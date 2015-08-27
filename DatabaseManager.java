@@ -24,7 +24,7 @@ public class DatabaseManager {
 	private static SQLHelper helper;
 	private static SQLiteDatabase db;
 	private static final String DB_NAME = "inspiration_items";
-	private static final int DB_VERSION = 5;
+	private static final int DB_VERSION = 8;
 
 	//Schema stuff - table names
 

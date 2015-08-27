@@ -77,6 +77,12 @@ public class InspirationList extends ActionBarActivity {
 
 	}
 
+	@Override
+	protected void onResume() {
+		super.onResume();
+		refreshList();
+	}
+
 	private void addTestData() {
 
 		Note test1 = new Note("Hello, I'm a test note", new Date(), new Date());
@@ -259,7 +265,7 @@ public class InspirationList extends ActionBarActivity {
 		}
 
 
-		if (request == VIEW_EDIT_NOTE_REQUEST_CODE && result == RESULT_OK) {
+		else if (request == VIEW_EDIT_NOTE_REQUEST_CODE && result == RESULT_OK) {
 
 			//Should have
 			// new text for a current note. Must modify and update correct note in DB
@@ -278,13 +284,15 @@ public class InspirationList extends ActionBarActivity {
 		}
 
 
-		if (request == NEW_PICTURE_REQUEST_CODE && result == RESULT_OK) {
+		else if (request == NEW_PICTURE_REQUEST_CODE && result == RESULT_OK) {
 
 			//Bitmap picture = (Bitmap) data.getExtras().get("data");
 
 			//pictureUri = data.getParcelableExtra(MediaStore.EXTRA_OUTPUT);
 
 			Picture newPicture = new Picture(pictureUri, new Date(), new Date(), null);
+
+			Log.i(TAG, "on activity result picture uri is " + pictureUri);
 
 			//Add to database
 
@@ -301,10 +309,10 @@ public class InspirationList extends ActionBarActivity {
 
 			startActivity(viewPicture);
 
+		}
 
-
-
-
+		else {
+			refreshList();
 		}
 
 	}
@@ -321,9 +329,9 @@ public class InspirationList extends ActionBarActivity {
 
 
 		//remove suspect chars
-		filename = filename.replace(":", "+");
+		filename = filename.replace(":", "-");
 		while (filename.contains(" ")) {
-			filename = filename.replace(" ", "+");
+			filename = filename.replace(" ", "-");
 		}
 
 
@@ -333,8 +341,11 @@ public class InspirationList extends ActionBarActivity {
 		File file = new File(Environment.getExternalStorageDirectory(), filename);
 
 
+
 		//TODO save original size *and* thumbnail to cut down on resizing when list is being drawn?
 		pictureUri = Uri.fromFile(file);
+
+		Log.i(TAG, "in addPicture. The picture Uri is" + pictureUri.toString());
 
 		Intent takePicture = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
