@@ -141,6 +141,11 @@ public class Picture extends InspirationItem {
 		return mFileUri;
 	}
 
+
+	public Hashtags getHashtags(){
+		return mHashtags;
+	}
+
 	public String getHashtagsAsString() {
 
 		return mHashtags.toString();

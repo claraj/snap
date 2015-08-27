@@ -16,8 +16,8 @@ public class AddNoteActivity extends AddInspirationActivity {
 
 //TODO two different types of behavior -  editing existing OR creating new?
 
+//TODO rewrite this class will send updates to database
 
-	//public final static String NEW_NOTE_TEXT = "New note text from add note activity";
 
 	Date originalDate;
 	int db_id;

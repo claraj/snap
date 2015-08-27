@@ -138,13 +138,87 @@ public class DatabaseManager {
 	public InspirationItem getItemForPosition(int position) {
 
 
+		buildCache();
+
+//		this.db = helper.getReadableDatabase();
+//
+//
+//		if (cacheValid == false) {    //if cache is NOT valid...
+//
+//
+//			Log.i(TAG, "cache invalid, recreating arraylist");
+//
+//			allInspirationsCache = new ArrayList<>();  //wipe the cache
+//
+//			//Formulate a query. Fetch everything from all tables, sort in date order, return position-th item.
+//
+//			//Query: select * from notes; select * from notes table
+//
+//			Cursor noteCursor = db.query(NOTES_TABLE, null, null, null, null, null, null);
+//
+//			int id; String text, create, mod;
+//			noteCursor.moveToFirst();
+//			while (noteCursor.isAfterLast() == false) {
+//				id = noteCursor.getInt(0);
+//				text = noteCursor.getString(1);
+//				create = noteCursor.getString(2);
+//				mod = noteCursor.getString(3);
+//				Note note = new Note(id, text, create, mod);
+//				Log.i(TAG, "adding Note to cache " + note.toString());
+//				allInspirationsCache.add(note);
+//				noteCursor.moveToNext();
+//			}
+//
+//			noteCursor.close();
+//
+//			Cursor pictureCursor = db.query(PICTURE_TABLE, null, null, null, null, null, null);
+//
+//			String tags, uri;
+//			pictureCursor.moveToFirst();
+//			while (pictureCursor.isAfterLast() == false) {
+//				id = pictureCursor.getInt(0);
+//				uri = pictureCursor.getString(1);
+//				create = pictureCursor.getString(2);
+//				mod = pictureCursor.getString(3);
+//				tags = pictureCursor.getString(4);
+//
+//				Picture picture = new Picture(id, uri, create, mod, tags);
+//				allInspirationsCache.add(picture);
+//
+//				pictureCursor.moveToNext();
+//			}
+//
+//
+//			pictureCursor.close();
+//
+//			Collections.sort(allInspirationsCache);   //Sort by date order
+//
+//			cacheValid = true;
+//
+//		}
+//
+//
+//		close();
+
+		try {
+			return allInspirationsCache.get(position);
+		}  catch (ArrayIndexOutOfBoundsException ae) {
+			Log.e(TAG, "requesting item not in cache" + position + allInspirationsCache.size() ,  ae);
+			return null;
+		}
+	}
+
+
+	private void buildCache() {
+
+
 		this.db = helper.getReadableDatabase();
 
 
 		if (cacheValid == false) {    //if cache is NOT valid...
 
 
-			Log.i(TAG, "cache invalid, recreating arraylist");
+			Log.i(TAG, "cache invalid, building recreating arraylist");
 
 			allInspirationsCache = new ArrayList<>();  //wipe the cache
 
@@ -195,26 +269,50 @@ public class DatabaseManager {
 
 		}
 
-
 		close();
 
-		try {
-			return allInspirationsCache.get(position);
-		}  catch (ArrayIndexOutOfBoundsException ae) {
-			Log.e(TAG, "requesting item not in cache" + position + allInspirationsCache.size() ,  ae);
-			return null;
+	}
+
+
+
+	public ArrayList<InspirationItem> search(String searchText) {
+
+		ArrayList<InspirationItem> matches = new ArrayList<>();
+
+		//search notes
+
+		//select * from notes where text like %text%
+
+		//select * from pictures where hashtags like %text%
+
+		//sort and return in date order
+
+		if (!cacheValid) {
+			buildCache();
 		}
+
+			for (InspirationItem i : allInspirationsCache ) {
+
+				if (i instanceof Note) {
+					Note n = (Note) i;
+					if (n.getText().contains(searchText)) {
+						matches.add(n);
+					}
+				}
+
+				if (i instanceof Picture) {
+					Picture p = (Picture) i;
+					if (p.getHashtags().contains(searchText)) {
+						matches.add(p);
+					}
+				}
+
+			}
+
+		return matches;
+
 	}
 
-
-
-	public void addInspirationItem() {
-		//TODO
-		//What table to add it to? Need two separate methods for picture, note?
-
-		cacheValid = false;  //need to rebuild cache
-
-	}
 
 //RETURN the rowid aka primary key
 

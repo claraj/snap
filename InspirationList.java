@@ -18,18 +18,19 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.SearchView;
 import android.widget.TextView;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.UUID;
 
 
 //TODO Way to search (search bar at top of list)  TODO searchview instead of edittext
-//TODO Tap list item to view picture in new Activity
-//TODO Add pictures and hashtags
 //TODO Needs to be in fragments BECAUSE tablet view is different to phone BUT this prototype is for a phone (so far)
 //TODO show modified dates in ListView
+//TODO delete picture
 //TODO Back button saves note too
 
 
@@ -59,6 +60,8 @@ public class InspirationList extends ActionBarActivity {
 
 ;	//TODO progress bar while list loads
 
+	//TODO load list asynchronously
+
 	private ListView mInspirationList;
 	private DatabaseManager mDatabaseManager;
 
@@ -74,6 +77,37 @@ public class InspirationList extends ActionBarActivity {
 	//	addTestData();
 
 		configureListView();
+
+		configureSearchFeatures();
+
+	}
+
+	private void configureSearchFeatures() {
+
+		final SearchView searchBox = (SearchView) findViewById(R.id.search_box);
+
+		searchBox.setOnSearchClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+
+
+				if (searchBox.getQuery() == null || searchBox.getQuery().toString().length() == 0) {
+					return;
+				}
+
+				//else search!
+
+				ArrayList<InspirationItem> matches = mDatabaseManager.search (searchBox.getQuery().toString());
+
+				//Do something...  //TODO do we modify what adapter displays?
+				//TODO must have back button returning to original list
+				//TODO must have a cancel or show all button
+
+
+
+
+			}
+		});
 
 	}
 
@@ -153,7 +187,8 @@ public class InspirationList extends ActionBarActivity {
 				}
 
 				if (item instanceof Picture) {
-					//TODO picture Activity, view, edit hashtags etc.
+
+					//TODO save modified hashtags
 
 					Intent editViewPicture = new Intent(InspirationList.this, ViewPictureActivity.class);
 					editViewPicture.putExtra(PICTURE_DB_ID, item.mDatabaseID);
@@ -166,6 +201,10 @@ public class InspirationList extends ActionBarActivity {
 
 		//Indicate that the list view should display a context menu on long-press
 		registerForContextMenu(mInspirationList);
+
+
+
+
 
 	}
 
