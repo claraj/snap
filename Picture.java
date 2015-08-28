@@ -124,7 +124,6 @@ public class Picture extends InspirationItem {
 
 		thumbNailImageView.setImageBitmap(imageThumbnail);
 
-
 		return picView;    //TODO consider memory here and possibly revise?
 
 
