@@ -174,9 +174,7 @@ public class DatabaseManager {
 	public InspirationItem getItemForPosition(int position, String filter) {
 
 		//Formulate a query. Fetch everything from all tables, sort in date order, return position-th item.
-
 		//Query: select * from notes; select * from notes table
-
 		//Optionally filter the results
 
 		//TODO there MUST be SQL that does this for me.  some kind of unions? The goal is to get all the data, sort by date, return position'th item.
@@ -249,35 +247,20 @@ public class DatabaseManager {
 
 	public long addNote(Note note){
 
-		//SQL query to add new note
-
 		this.db = helper.getWritableDatabase();
-
-
 
 		ContentValues newNote = new ContentValues();
 		newNote.put(NOTE_TEXT_COL, note.getText());
 		newNote.put(NOTE_DATE_CREATE_COL, note.getDateCreatedAsString());
 		newNote.put(NOTE_DATE_LAST_MOD_COL, note.getDateModifiedAsString());
 
-
 		long id = -1;
 
 		try {
-
 			id = db.insertOrThrow(NOTES_TABLE, null, newNote);
-
-
 		} catch (SQLException sqle) {
 			Log.e(TAG, "Error inserting " + note + " into database", sqle);
-			//TODO don't fail silently
-
 		}
-
-
-	//	cacheValid = false;
-
-		//TODO what to do with note id?
 
 		db.close();
 
@@ -385,7 +368,6 @@ public class DatabaseManager {
 
 		int rowsUpdated = db.update(NOTES_TABLE, newNoteData, whereClause, null );
 
-		//cacheValid = false;
 		close();
 
 	}

@@ -16,18 +16,13 @@ import java.util.Date;
  */
 public class AddEditViewNoteActivity extends AddInspirationActivity {
 
-//TODO two different types of behavior -  editing existing OR creating new?
 
-//TODO rewrite this class will send updates to database
-
-
-	Date originalDate;
-	int db_id;
-
+	private static final String TAG = "AddEditViewNote";
 	Note mNote;
-
 	DatabaseManager dbMananger;
+	EditText textEntered;
 
+	private boolean modifying;
 
 
 	protected void onCreate(Bundle savedInstanceState) {
@@ -39,40 +34,50 @@ public class AddEditViewNoteActivity extends AddInspirationActivity {
 
 		long noteId = getIntent().getLongExtra(InspirationList.NOTE_DB_ID, -1);
 
-
-		final EditText textEntered = (EditText) findViewById(R.id.new_note_edittext);
+		textEntered = (EditText) findViewById(R.id.new_note_edittext);
 		TextView originalCreateDateTV = (TextView) findViewById(R.id.date_note_created);
+		TextView modifiedDateTV = (TextView) findViewById(R.id.date_note_modified);
 		Button saveButton = (Button) findViewById(R.id.save_note_button);
 
 
 		if (noteId == -1) {
+
+			modifying = false;
 			//We are are creating new note. Clear everything, set create date/mod date to now
 			mNote = new Note(noteId, "", new Date(), new Date());
 			textEntered.setText("");
-			originalCreateDateTV.setText(mNote.getDateCreatedAsString());
+			originalCreateDateTV.setText(getString(R.string.created) + mNote.getDateCreatedAsString());
+			modifiedDateTV.setText(getString(R.string.modified) + "");
+			//leave modified date blank
 
 		} else {
 
+			modifying = true;
 			//Displaying data from existing note
 			mNote = dbMananger.getNote(noteId);
 			textEntered.setText(mNote.getText());
-			originalCreateDateTV.setText(mNote.getDateCreatedAsString());
+			originalCreateDateTV.setText(getString(R.string.created) + mNote.getDateCreatedAsString());
+			modifiedDateTV.setText(getString(R.string.modified) + mNote.getDateModifiedAsString());
+
+		}
 
 
-			saveButton.setOnClickListener(new View.OnClickListener() {
-				@Override
-				public void onClick(View v) {
+		saveButton.setOnClickListener(new View.OnClickListener() {
+				@Override public void onClick(View v) {
 					//save and return to calling activity
+
 					saveNote();
 					setResult(RESULT_OK);
+					Log.i(TAG, "save pressed, saving and exiting, note is " + mNote);
+
 					finish();
 
 				}
-			});
+		});
 
 
-			Button cancelButton = (Button) findViewById(R.id.cancel_note_button);
-			cancelButton.setOnClickListener(new View.OnClickListener() {
+		Button cancelButton = (Button) findViewById(R.id.cancel_note_button);
+		cancelButton.setOnClickListener(new View.OnClickListener() {
 				@Override
 				public void onClick(View v) {
 
@@ -80,9 +85,9 @@ public class AddEditViewNoteActivity extends AddInspirationActivity {
 					setResult(RESULT_CANCELED);
 					finish();
 				}
-			});
+		});
 
-		}
+
 
 	}
 
@@ -90,7 +95,9 @@ public class AddEditViewNoteActivity extends AddInspirationActivity {
 	public void onBackPressed(){
 
 		saveNote();
-		setResult(RESULT_OK);
+		//setResult(RESULT_OK);
+		Log.i(TAG, "on back pressed, saving and exiting, note is " + mNote);
+
 		finish();
 	}
 
@@ -98,7 +105,16 @@ public class AddEditViewNoteActivity extends AddInspirationActivity {
 	protected void saveNote() {
 
 		mNote.setDateLastModified(new Date());
-		dbMananger.updateNote(mNote);
+		mNote.setText(textEntered.getText().toString());
+
+		if (modifying) {
+			dbMananger.updateNote(mNote);
+		} else {
+			//add new note - so long as text is not null and is not empty.
+			if (mNote.getText() != null && !mNote.getText().equals("")) {
+				dbMananger.addNote(mNote);
+			}
+		}
 
 	}
 

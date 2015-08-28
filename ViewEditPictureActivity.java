@@ -3,6 +3,7 @@ package com.example.hello.inspirationboard;
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.Image;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -24,6 +25,11 @@ public class ViewEditPictureActivity extends Activity {
 
 	DatabaseManager mDBManager;
 
+	private Picture mPicture;
+
+	private ImageView mPictureView;
+	private EditText hashTagsEditText;
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -34,35 +40,35 @@ public class ViewEditPictureActivity extends Activity {
 
 		mDBManager = DatabaseManager.getInstance(this);   //TODO Working with same DatabaseManager but different context. is this ok?
 
-		Picture picture = mDBManager.getPicture(pictureDBID);
+		mPicture = mDBManager.getPicture(pictureDBID);
 
-		displayPicture(picture);
+		displayPicture();
 
 	}
 
-	private void displayPicture(final Picture picture) {
+	private void displayPicture() {
 
-		if (picture == null) {
+		if (mPicture == null) {
 			Toast.makeText(getApplicationContext(), "No picture data found in database", Toast.LENGTH_LONG).show();
 		}
 
-		ImageView pictureView = (ImageView) findViewById(R.id.picture_imageview);
+		mPictureView = (ImageView) findViewById(R.id.picture_imageview);
 
 		//TOOD load from URI
 
-		Log.i(TAG, "About to load" + picture.getUriAsString());
+		Log.i(TAG, "About to load" + mPicture.getUriAsString());
 
-		loadPicture(picture, pictureView);
+		loadPicture();
 
 
 		TextView dateCreated = (TextView) findViewById(R.id.picture_view_date_created);
-		dateCreated.setText(picture.getDateCreatedAsString());
+		dateCreated.setText(mPicture.getDateCreatedAsString());
 
 		TextView dateModified = (TextView) findViewById(R.id.picture_view_date_modifed);
-		dateModified.setText(picture.getDateModifiedAsString());
+		dateModified.setText(mPicture.getDateModifiedAsString());
 
-		final EditText hashTagsEditText = (EditText) findViewById(R.id.picture_view_hashtags);
-		hashTagsEditText.setText(picture.getHashtagsAsString());
+		hashTagsEditText = (EditText) findViewById(R.id.picture_view_hashtags);
+		hashTagsEditText.setText(mPicture.getHashtagsAsString());
 
 
 		Button saveHashTags = (Button) findViewById(R.id.save_hashtags_button);
@@ -71,8 +77,9 @@ public class ViewEditPictureActivity extends Activity {
 			public void onClick(View v) {
 
 				//Save hashtags and tell DB to update this Picture's entry.
-				picture.setHashtags(hashTagsEditText.getText().toString());
-				mDBManager.updatePicture(picture);
+				mPicture.setHashtags(hashTagsEditText.getText().toString());
+				mDBManager.updatePicture(mPicture);
+				setResult(RESULT_OK);
 				finish();
 
 			}
@@ -82,19 +89,33 @@ public class ViewEditPictureActivity extends Activity {
 		cancelSaveHashTags.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
+				setResult(RESULT_CANCELED);
 				finish();   //back to previous Activity.
 			}
 		});
 
 	}
 
-	private void loadPicture(Picture picture, ImageView imageView) {
+
+	@Override
+	public void onBackPressed(){
+		
+		//Save hashtags and tell DB to update this Picture's entry.
+		mPicture.setHashtags(hashTagsEditText.getText().toString());
+		mDBManager.updatePicture(mPicture);
+		setResult(RESULT_OK);
+		finish();
+
+
+	}
+
+	private void loadPicture() {
 
 		//Fetch picture by URI, scale to display.
 
 		BitmapFactory.Options bmOptions = new BitmapFactory.Options();
 		bmOptions.inJustDecodeBounds = true;   //todo look these up see drawonapicture
-		String photoPath = picture.getFileUri().getPath();
+		String photoPath = mPicture.getFileUri().getPath();
 		BitmapFactory.decodeFile(photoPath);
 
 		int pictureH = bmOptions.outHeight;
@@ -103,9 +124,10 @@ public class ViewEditPictureActivity extends Activity {
 		//scale the image
 
 
-		//imageView size  //fixme
-		int imageViewWidth = 200; //= imageView.getWidth();
-		int imageViewHeight = 200; //= imageView.getHeight();
+		//imageView size  //fixme this is a layout problem
+
+		int imageViewWidth = 200; //= imageView.getWidth();   //fixme - read from UI
+		int imageViewHeight = 200; //= imageView.getHeight();  //fixme
 
 		int scaleFactor = Math.min(pictureH / imageViewHeight, pictureW/imageViewWidth);
 
@@ -116,10 +138,7 @@ public class ViewEditPictureActivity extends Activity {
 
 		Bitmap bitmap = BitmapFactory.decodeFile(photoPath);
 
-		imageView.setImageBitmap(bitmap);
-
-
-
+		mPictureView.setImageBitmap(bitmap);
 
 	}
 

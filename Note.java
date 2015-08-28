@@ -21,6 +21,8 @@ public class Note extends InspirationItem {
 	//private Date dateLastMod;
 
 	private int previewLengthChars = 100;
+	private int maxRows = 5;
+
 	private String indicateMore = "...";
 
 	public Note(String text, Date created, Date lastMod) {
@@ -75,20 +77,28 @@ public class Note extends InspirationItem {
 
 		View noteView = inflate.inflate(R.layout.note_list_item, parent, false);  //TODO???
 
-		//fill in fields.... first 100 chars from text, plus date created  //TODO Last mod.
+		//fill in fields.... first 100 chars from text, plus date created. Layout controls max lines and adds ... if text doesn't fit.
 
 		TextView noteText = (TextView)noteView.findViewById(R.id.note_start_text);
 
-		if (mText.length() < previewLengthChars) {
+
+
+		noteText.setText(mText);
+/*		if (mText.length() < previewLengthChars) {
 			noteText.setText(mText);
 		} else {
 			String previewChars = mText.substring(0, previewLengthChars);
 			previewChars = previewChars.concat(indicateMore);
 			noteText.setText(previewChars);
-		}
 
+		}
+*/
 		TextView noteDateCreate = (TextView)noteView.findViewById(R.id.note_create_date);
-		noteDateCreate.setText(mDateCreated.toString());
+		noteDateCreate.setText(getDateCreatedAsString());
+
+		TextView noteDateModified = (TextView)noteView.findViewById(R.id.note_mod_date);
+		noteDateModified.setText(getDateModifiedAsString());
+
 
 
 		//TODO Last mod
@@ -99,5 +109,7 @@ public class Note extends InspirationItem {
 	}
 
 
-
+	public void setText(String text) {
+		this.mText = text;
+	}
 }

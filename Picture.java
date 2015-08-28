@@ -1,6 +1,7 @@
 package com.example.hello.inspirationboard;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.ThumbnailUtils;
@@ -20,20 +21,12 @@ import java.util.Date;
  */
 public class Picture extends InspirationItem {
 
-	private final String TAG = "PICTURE class";
+	private final static String TAG = "PICTURE class";
 	private Uri mFileUri;
 	private Hashtags mHashtags;
 
-	private int mThumbnailWidth = 100;
-	private int mThumbnailHeight = 100;
-
-	static {
-
-		//TODO read in dimensions for thumbnails from resource file replace these
-		/*
-	private int thumbnailWidth = 100;
-	private int thumbnailHeight = 100;*/
-	}
+	public static int mThumbnailWidth = 100;
+	public static int mThumbnailHeight = 100;  //defaults... hope ListViewActivity overrides....
 
 
 	public Picture(Uri uri, Date taken, Date modified, Hashtags tags) {
@@ -132,7 +125,7 @@ public class Picture extends InspirationItem {
 		thumbNailImageView.setImageBitmap(imageThumbnail);
 
 
-		return picView;    //TODO consider memory here and
+		return picView;    //TODO consider memory here and possibly revise?
 
 
 	}

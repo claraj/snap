@@ -57,7 +57,7 @@ public class Hashtags {
 
 		if (tagString.endsWith(SEPARATOR_CHAR)) {
 			int cutChar = tagString.lastIndexOf(SEPARATOR_CHAR);
-			tagString = tagString.substring(0, cutChar);   //TODO TEST
+			tagString = tagString.substring(0, cutChar);
 		}
 
 		Log.i(TAG, "Hasttags string returned is " + tagString);

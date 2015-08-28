@@ -21,6 +21,7 @@ public abstract class InspirationItem implements Comparable<InspirationItem> {
 
 	protected static SimpleDateFormat dateFormatter;
 
+
 	static {
 		dateFormatter = new SimpleDateFormat();
 		dateFormatter.applyPattern(DATE_FORMAT_STRING);

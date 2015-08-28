@@ -1,5 +1,6 @@
 package com.example.hello.inspirationboard;
 
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Environment;
@@ -12,6 +13,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
@@ -24,13 +26,7 @@ import java.util.UUID;
 
 
 //TODO Needs to be in fragments BECAUSE tablet view is different to phone BUT this prototype is for a phone (so far)
-//TODO show modified dates in ListView
-//TODO clean up search functionality, such as "no items found" message, hide keyboard after user clicks search
-//TODO Back button saves note too
-
-//Tidy UI, organize components more neatly
-
-
+//TODO clean up search functionality, such as "no items found" message
 
 
 public class InspirationList extends ActionBarActivity {
@@ -81,6 +77,18 @@ public class InspirationList extends ActionBarActivity {
 
 		configureSearchFeatures();
 
+		configureResources();
+
+	}
+
+	private void configureResources() {
+
+		//TODO YUCK YUCK YUCK GET THIS OUT OF HERE
+		//(how? can only get system resources from Picture class unless it can be passed the Application Context)
+
+		Picture.mThumbnailHeight = (int) getResources().getDimension(R.dimen.thumbnail_height);
+		Picture.mThumbnailWidth = (int) getResources().getDimension(R.dimen.thumbnail_width);
+
 	}
 
 	private void configureSearchFeatures() {
@@ -98,6 +106,7 @@ public class InspirationList extends ActionBarActivity {
 		});
 
 		final SearchView searchBox = (SearchView) findViewById(R.id.search_box);
+		searchBox.setSubmitButtonEnabled(true);
 
 		searchBox.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
 			@Override
@@ -114,6 +123,12 @@ public class InspirationList extends ActionBarActivity {
 				mListAdapter.setSearchString(query);
 				refreshList();
 				clearSearchButton.setVisibility(View.VISIBLE);
+
+				//Hide keyboard
+
+				InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+				imm.hideSoftInputFromWindow(searchBox.getWindowToken(), 0);
+
 
 				return true;
 			}
@@ -191,27 +206,17 @@ public class InspirationList extends ActionBarActivity {
 				//open new Activity to display note
 				InspirationItem item = mListAdapter.getItem(position);
 				if (item instanceof Note) {
-					//TODO open Note Activity for reading, editing.
-
-					//TODO just send the ID and have the activity fetch the rest of stuff from the DB.
 
 					Intent editViewNote = new Intent(InspirationList.this, AddEditViewNoteActivity.class);
 					editViewNote.putExtra(NOTE_DB_ID, item.mDatabaseID);
-					editViewNote.putExtra(NOTE_CREATE_DATE, item.mDateCreated);
-					editViewNote.putExtra(NOTE_TEXT, ((Note) item).getText());
-
-					editViewNote.putExtra(EDIT_EXISTING_NOTE, true);
 					startActivityForResult(editViewNote, VIEW_EDIT_NOTE_REQUEST_CODE);
 				}
 
 				if (item instanceof Picture) {
 
-					//TODO save modified hashtags
-
 					Intent editViewPicture = new Intent(InspirationList.this, ViewEditPictureActivity.class);
 					editViewPicture.putExtra(PICTURE_DB_ID, item.mDatabaseID);
 					startActivity(editViewPicture);
-
 
 				}
 			}
@@ -219,10 +224,6 @@ public class InspirationList extends ActionBarActivity {
 
 		//Indicate that the list view should display a context menu on long-press
 		registerForContextMenu(mInspirationList);
-
-
-
-
 
 	}
 
@@ -265,7 +266,6 @@ public class InspirationList extends ActionBarActivity {
 	}
 
 	private void configureDatabase() {
-		//TODO - anything else?
 
 		mDatabaseManager = DatabaseManager.getInstance(this);
 
@@ -282,8 +282,6 @@ public class InspirationList extends ActionBarActivity {
 	private void addNote(){
 
 		Intent newNote = new Intent(this, AddEditViewNoteActivity.class);
-		newNote.putExtra(EDIT_EXISTING_NOTE, false);
-
 		startActivityForResult(newNote, NEW_NOTE_REQUEST_CODE);
 
 	}
