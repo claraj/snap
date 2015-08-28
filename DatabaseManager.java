@@ -125,18 +125,50 @@ public class DatabaseManager {
 
 	}
 
-	/*public InspirationItem getItemForPosition(int position) {
 
 
-		buildCache();
+	public Note getNote(long id) {
 
-		try {
-			return allInspirationsCache.get(position);
-		}  catch (ArrayIndexOutOfBoundsException ae) {
-			Log.e(TAG, "requesting item not in cache" + position + allInspirationsCache.size() ,  ae);
-			return null;
+		//SELECT * FROM NOTES WHERE ID = ID
+
+		db = helper.getReadableDatabase();
+
+		ContentValues values = new ContentValues();
+		values.put(NOTE_ID_COL, id);
+
+		String where = NOTE_ID_COL + " = " + Long.toString(id);
+
+		Cursor cursor = db.query(NOTES_TABLE, null, where, null, null, null, null);
+
+		Note note = null;
+
+		if (cursor.getCount() == 0 ) {
+			Log.e(TAG, "no note found in DB for id " + id);
 		}
-	}*/
+
+		else if (cursor.getCount() == 1 ) {
+
+			//cool - found exactly one note
+			cursor.moveToFirst();
+
+			String text = cursor.getString(1);
+			String create = cursor.getString(2);
+			String mod = cursor.getString(3);
+
+			note = new Note(id, text, create, mod);
+		}
+
+		else {
+			//more than one picture returned for this id
+			Log.e(TAG, "ERROR more than one picture for ID " + id);
+		}
+
+		cursor.close();
+		db.close();
+
+		return note;   /// So will return null if 0 or more than 1 picture found.
+
+	}
 
 
 	public InspirationItem getItemForPosition(int position, String filter) {

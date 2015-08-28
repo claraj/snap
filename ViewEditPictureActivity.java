@@ -15,7 +15,7 @@ import android.widget.Toast;
 /**
  * Created by admin on 8/27/15.
  */
-public class ViewPictureActivity extends Activity {
+public class ViewEditPictureActivity extends Activity {
 
 
 	private final static String TAG = "View Picture Activity";

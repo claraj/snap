@@ -1,7 +1,6 @@
 package com.example.hello.inspirationboard;
 
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -13,25 +12,23 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Adapter;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.SearchView;
-import android.widget.TextView;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.UUID;
 
 
-//TODO Way to search (search bar at top of list)  TODO searchview instead of edittext
+
 //TODO Needs to be in fragments BECAUSE tablet view is different to phone BUT this prototype is for a phone (so far)
 //TODO show modified dates in ListView
-//TODO delete picture
+//TODO clean up search functionality, such as "no items found" message, hide keyboard after user clicks search
 //TODO Back button saves note too
+
+//Tidy UI, organize components more neatly
 
 
 
@@ -198,7 +195,7 @@ public class InspirationList extends ActionBarActivity {
 
 					//TODO just send the ID and have the activity fetch the rest of stuff from the DB.
 
-					Intent editViewNote = new Intent(InspirationList.this, AddNoteActivity.class);
+					Intent editViewNote = new Intent(InspirationList.this, AddEditViewNoteActivity.class);
 					editViewNote.putExtra(NOTE_DB_ID, item.mDatabaseID);
 					editViewNote.putExtra(NOTE_CREATE_DATE, item.mDateCreated);
 					editViewNote.putExtra(NOTE_TEXT, ((Note) item).getText());
@@ -211,7 +208,7 @@ public class InspirationList extends ActionBarActivity {
 
 					//TODO save modified hashtags
 
-					Intent editViewPicture = new Intent(InspirationList.this, ViewPictureActivity.class);
+					Intent editViewPicture = new Intent(InspirationList.this, ViewEditPictureActivity.class);
 					editViewPicture.putExtra(PICTURE_DB_ID, item.mDatabaseID);
 					startActivity(editViewPicture);
 
@@ -277,28 +274,14 @@ public class InspirationList extends ActionBarActivity {
 
 	protected void refreshList(){
 
-		//replaces the list adapter. TODO this *can't* be the right way... can it?
-
-		String oldSearch = mListAdapter.getSearchString();
-
-		mListAdapter = new ListDataProvider(this, mDatabaseManager);
-		mListAdapter.setSearchString(oldSearch);
-
-		//TODO this can't be how you do this correctly.
-		mInspirationList.setAdapter(mListAdapter);
-
-
-		//TODO Try this...???? OR replace with ArrayLAdapter ???
-		//mInspirationList.invalidateViews();
-
-
+		mInspirationList.invalidateViews();
 
 	}
 
 
 	private void addNote(){
 
-		Intent newNote = new Intent(this, AddNoteActivity.class);
+		Intent newNote = new Intent(this, AddEditViewNoteActivity.class);
 		newNote.putExtra(EDIT_EXISTING_NOTE, false);
 
 		startActivityForResult(newNote, NEW_NOTE_REQUEST_CODE);
@@ -309,52 +292,10 @@ public class InspirationList extends ActionBarActivity {
 	@Override
 	protected void onActivityResult(int request, int result, Intent data){
 
-		if (request == NEW_NOTE_REQUEST_CODE && result == RESULT_OK) {
+		if (request == NEW_PICTURE_REQUEST_CODE && result == RESULT_OK) {
 
-			//Extract text, generate new note, add to DB.
-
-			String newNoteText = data.getExtras().getString(NOTE_TEXT);
-
-			if (newNoteText == null || newNoteText.length() == 0) {
-				Log.i(TAG, "new note text is blank or null");
-				return;
-			}
-
-			Note newNote = new Note(newNoteText, new Date(), new Date());
-			mDatabaseManager.addNote(newNote);
-
-			//Update list with latest content;
-
-			refreshList();
-
-			Log.i(TAG, "Added note:" + newNote.toString());
-		}
-
-
-		else if (request == VIEW_EDIT_NOTE_REQUEST_CODE && result == RESULT_OK) {
-
-			//Should have
-			// new text for a current note. Must modify and update correct note in DB
-
-			Bundle b = data.getExtras();
-			long noteID = b.getLong(NOTE_DB_ID);
-			Date created = (Date)b.getSerializable(NOTE_CREATE_DATE);
-			String text = b.getString(NOTE_TEXT);
-
-			Note updated = new Note(noteID, text, created, new Date());
-			mDatabaseManager.updateNote(updated);
-
-			refreshList();
-
-
-		}
-
-
-		else if (request == NEW_PICTURE_REQUEST_CODE && result == RESULT_OK) {
-
-			//Bitmap picture = (Bitmap) data.getExtras().get("data");
-
-			//pictureUri = data.getParcelableExtra(MediaStore.EXTRA_OUTPUT);
+			//More complex than note. After picture is taken, create new intent to launch
+			//ViewPictureActivity so user can review and add hashtags.
 
 			Picture newPicture = new Picture(pictureUri, new Date(), new Date(), null);
 
@@ -368,16 +309,16 @@ public class InspirationList extends ActionBarActivity {
 
 			//Start EditPictureActivity for user to view picture and add hashtags, if desired
 
-			Intent viewPicture = new Intent(InspirationList.this, ViewPictureActivity.class);
+			Intent viewPicture = new Intent(InspirationList.this, ViewEditPictureActivity.class);
 
 			//Add the DB Id and launch viewPicture
 			viewPicture.putExtra(PICTURE_DB_ID, newPictureID);
 
 			startActivity(viewPicture);
-
 		}
 
 		else {
+			//Like a note was added or modified, or something....
 			refreshList();
 		}
 
@@ -407,7 +348,6 @@ public class InspirationList extends ActionBarActivity {
 		File file = new File(Environment.getExternalStorageDirectory(), filename);
 
 
-
 		//TODO save original size *and* thumbnail to cut down on resizing when list is being drawn?
 		pictureUri = Uri.fromFile(file);
 
@@ -418,9 +358,6 @@ public class InspirationList extends ActionBarActivity {
 		takePicture.putExtra(MediaStore.EXTRA_OUTPUT, pictureUri);  //save my picture here plz
 
 		startActivityForResult(takePicture, NEW_PICTURE_REQUEST_CODE);
-
-
-
 
 
 	}
@@ -440,6 +377,7 @@ public class InspirationList extends ActionBarActivity {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.menu_inspiration_list, menu);
 		return true;
+		//TODO do we need this?
 	}
 
 	@Override

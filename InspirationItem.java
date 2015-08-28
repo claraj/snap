@@ -49,6 +49,14 @@ public abstract class InspirationItem implements Comparable<InspirationItem> {
 	}
 
 
+	public void setDateLastModified(Date lastModified) {
+		mDateLastModified = lastModified;
+	}
+
+	public void setDateCreated(Date created) {
+		mDateCreated = created;
+	}
+
 
 	public abstract View getView(Context appContext, ViewGroup parent);
 
