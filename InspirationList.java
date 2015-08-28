@@ -26,8 +26,16 @@ import java.util.UUID;
 
 
 //TODO Needs to be in fragments BECAUSE tablet view is different to phone BUT this prototype is for a phone (so far)
+
+//TODO load list in background view
+
+//TODO review images to be less demanding on memory
+
+//TODO cool overlay to draw letters to operate app (?) optional... :)
+
 //TODO clean up search functionality, such as "no items found" message
 
+//TODO fix layout for landscape picture view - Cancel button is being squashed
 
 public class InspirationList extends ActionBarActivity {
 
